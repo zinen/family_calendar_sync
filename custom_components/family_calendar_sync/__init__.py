@@ -61,6 +61,7 @@ def _normalize_copy_all_from(value):
 OPTIONS_SCHEMA = vol.Schema(
     {
         vol.Optional("days_to_sync", default=7): cv.positive_int,
+        vol.Optional("days_to_sync_past", default=0): cv.positive_int,
         vol.Optional("ignore_event_if_title_starts_with", default=""): cv.string,
     }
 )

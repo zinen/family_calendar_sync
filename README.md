@@ -12,6 +12,8 @@ The idea is to read from one or more `parent` calendar entities then copy the ev
     - Works as both `parent` and `child` if it's set up with two-way sync permissions.
 - Local Calendar:
     - Works as both `parent` and `child`.
+- Remote Calendar:
+    - Only works as `parent` because they are imported from remote.
 
 ## Background
 
@@ -66,6 +68,9 @@ Type: Map
     - `days_to_sync` (optional):
         - **Type**: Integer
         - **Description**: The number of days into the future for which events should be synchronized. Default, 7.
+    - `days_to_sync_past` (optional):
+        - **Type**: Integer
+        - **Description**: The number of days into the past for which events should be synchronized. Default, 0.
     - `ignore_event_if_title_starts_with` (optional):
         - **Type**: String
         - **Description**: If an event title starts with this string, the event will be ignored during synchronization. Because sometimes the kids don't need to know everything going on 😉.

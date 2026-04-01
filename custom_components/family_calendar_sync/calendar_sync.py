@@ -11,9 +11,11 @@ from homeassistant.components.calendar import CalendarEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.util import dt as dt_util
 
-from .const import DEFAULT_DAYS_TO_SYNC, HASH_LENGTH
+from .const import DEFAULT_DAYS_TO_SYNC, DEFAULT_DAYS_TO_SYNC_PAST, HASH_LENGTH
 
 HASH_REGEX = re.compile(r"\[([a-z0-9]{8})\]", re.IGNORECASE)
+
+MIN_EVENT_DURATION = timedelta(seconds=1)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,12 +26,19 @@ class SyncDateRange:
 
     start: datetime
     days_to_sync: int
+    days_to_sync_past: int = 0
 
     @property
     def end(self) -> datetime:
         """Return the end datetime."""
         end_datetime = self.start + timedelta(days=self.days_to_sync)
         return dt_util.as_local(end_datetime)
+
+    @property
+    def start_including_past(self) -> datetime:
+        """Return the start datetime including past boundary."""
+        start_datetime = self.start - timedelta(days=self.days_to_sync_past)
+        return dt_util.as_local(start_datetime)
 
 
 class Event:
@@ -310,7 +319,7 @@ class Calendar:
         if cal:
             events_data = await cal.async_get_events(
                 self._hass,
-                self._sync_date_range.start,
+                self._sync_date_range.start_including_past,
                 self._sync_date_range.end,
             )
 
@@ -436,6 +445,7 @@ class ChildCalendar(Calendar):
         payload = {}
         payload = event.get_data_for_event_creation()
         payload["entity_id"] = self.entity_id
+        payload = self.ensure_min_duration(payload)
         _LOGGER.debug("about to create event with payload %s", payload)
         await self._hass.services.async_call(
             "calendar",
@@ -468,6 +478,34 @@ class ChildCalendar(Calendar):
             if hashed_value in self.hash_set
         ]
 
+    def ensure_min_duration(self, payload: dict) -> dict:
+        """Extend events that are less than minimum length to avoid errors"""
+        if "start_date_time" in payload and "end_date_time" in payload:
+            start = payload["start_date_time"]
+            end = payload["end_date_time"]
+
+            if isinstance(start, str):
+                start_dt = dt_util.parse_datetime(start)
+            else:
+                start_dt = start
+
+            if isinstance(end, str):
+                end_dt = dt_util.parse_datetime(end)
+            else:
+                end_dt = end
+
+            if start_dt and end_dt and end_dt <= start_dt:
+                payload["end_date_time"] = start_dt + MIN_EVENT_DURATION
+
+        if "start_date" in payload and "end_date" in payload:
+            start_d = payload["start_date"]
+            end_d = payload["end_date"]
+            
+            if end_d == start_d:
+                payload["end_date"] = start_d + timedelta(days=1)
+
+        return payload
+
 
 class SyncWorker:
     """Sync events from parent calendar to child calendar."""
@@ -482,6 +520,7 @@ class SyncWorker:
         options = self._config.get("options", None)
         if options:
             days_to_sync = options.get("days_to_sync", DEFAULT_DAYS_TO_SYNC)
+            days_to_sync_past = options.get("days_to_sync_past", DEFAULT_DAYS_TO_SYNC_PAST)
             self._ignore_event_if_title_starts_with = options.get(
                 "ignore_event_if_title_starts_with", None
             )
@@ -492,6 +531,7 @@ class SyncWorker:
         self._sync_date_range = SyncDateRange(
             start=dt_util.as_local(datetime.now()),
             days_to_sync=days_to_sync,
+            days_to_sync_past=days_to_sync_past,
         )
 
         self._calendars: dict[str, list[Calendar]] = {"parent": [], "child": []}
