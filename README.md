@@ -102,7 +102,7 @@ Type: List
                 - `entity_id`:
                     - **Type**: String
                     - **Description**: The unique identifier of the parent calendar.
-        - `keywords`:
+        - `keywords (optional):`:
             - **Type**: List of Strings
             - **Description**: A list of keywords used as a case-insensitive search filter against the title's of `parent` events.
 
