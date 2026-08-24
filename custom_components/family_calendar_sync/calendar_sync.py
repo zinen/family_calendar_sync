@@ -648,7 +648,7 @@ class SyncWorker:
                 # Only sync if:
                 # 1. This parent is designated as copy_all for this child, OR
                 # 2. The child has keywords that might match events in this parent
-                if (parent_entity_id == parent_cal.entity_id) or child_cal.keywords:
+                if (parent_cal.entity_id in copy_all_parents) or child_cal.keywords:
                     await self._async_sync_parent_to_child(parent_cal, child_cal)
 
 
