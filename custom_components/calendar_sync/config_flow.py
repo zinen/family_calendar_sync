@@ -1,4 +1,4 @@
-"""Config flow for Family Calendar Sync."""
+"""Config flow for Calendar Sync."""
 
 from __future__ import annotations
 
@@ -159,7 +159,7 @@ def _options_from_user_input(user_input: dict[str, Any]) -> dict[str, Any]:
 
 
 class FamilyCalendarSyncConfigFlow(ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for Family Calendar Sync (one entry per `to` calendar)."""
+    """Handle a config flow for Calendar Sync (one entry per `to` calendar)."""
 
     VERSION = 1
 

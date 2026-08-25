@@ -1,4 +1,4 @@
-"""The Family Calendar Sync integration."""
+"""The Calendar Sync integration."""
 
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Family Calendar Sync from a config entry."""
+    """Set up Calendar Sync from a config entry."""
     coordinator = FamilyCalendarSyncCoordinator(hass, entry)
     await coordinator.async_config_entry_first_refresh()
 
@@ -74,7 +74,7 @@ async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> Non
 
 
 def _async_register_service(hass: HomeAssistant) -> None:
-    """Register the `family_calendar_sync.sync` action, once."""
+    """Register the `calendar_sync.sync` action, once."""
     if hass.services.has_service(DOMAIN, SERVICE_SYNC):
         return
 
@@ -89,7 +89,7 @@ def _async_register_service(hass: HomeAssistant) -> None:
             coordinator = hass.data.get(DOMAIN, {}).get(target_entry_id)
             if coordinator is None:
                 raise ValueError(
-                    f"No Family Calendar Sync config entry with id {target_entry_id}"
+                    f"No Calendar Sync config entry with id {target_entry_id}"
                 )
             coordinators = [coordinator]
 

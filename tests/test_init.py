@@ -1,4 +1,4 @@
-"""Tests for integration setup/unload and the `family_calendar_sync.sync` service."""
+"""Tests for integration setup/unload and the `calendar_sync.sync` service."""
 
 from unittest.mock import AsyncMock, patch
 
@@ -6,7 +6,7 @@ import pytest
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.family_calendar_sync.const import (
+from custom_components.calendar_sync.const import (
     CONF_COPY_ALL_FROM,
     CONF_FROM_ENTITIES,
     CONF_KEYWORDS,
@@ -37,7 +37,7 @@ async def test_setup_entry_creates_coordinator_and_registers_service(hass):
     entry.add_to_hass(hass)
 
     with patch(
-        "custom_components.family_calendar_sync.coordinator.sync_family_calendar",
+        "custom_components.calendar_sync.coordinator.sync_family_calendar",
         AsyncMock(return_value=SYNC_RESULT),
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
@@ -53,7 +53,7 @@ async def test_unload_entry_cleans_up_and_removes_service_when_last(hass):
     entry.add_to_hass(hass)
 
     with patch(
-        "custom_components.family_calendar_sync.coordinator.sync_family_calendar",
+        "custom_components.calendar_sync.coordinator.sync_family_calendar",
         AsyncMock(return_value=SYNC_RESULT),
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
@@ -75,7 +75,7 @@ async def test_sync_service_triggers_refresh_for_all_entries_by_default(hass):
 
     sync_mock = AsyncMock(return_value=SYNC_RESULT)
     with patch(
-        "custom_components.family_calendar_sync.coordinator.sync_family_calendar",
+        "custom_components.calendar_sync.coordinator.sync_family_calendar",
         sync_mock,
     ):
         # Setting up the first entry for a domain also bootstraps every
@@ -100,7 +100,7 @@ async def test_sync_service_targets_a_single_entry(hass):
 
     sync_mock = AsyncMock(return_value=SYNC_RESULT)
     with patch(
-        "custom_components.family_calendar_sync.coordinator.sync_family_calendar",
+        "custom_components.calendar_sync.coordinator.sync_family_calendar",
         sync_mock,
     ):
         assert await hass.config_entries.async_setup(entry_a.entry_id)

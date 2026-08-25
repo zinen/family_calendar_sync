@@ -1,10 +1,8 @@
-# family_calendar_sync
+# calendar_sync
 
-[Family Calendar Sync](https://github.com/McCroden/family_calendar_sync) is a custom component for Home Assistant that syncs events **from** one or more source calendars **to** one or more destination calendars, and keeps them in sync on a schedule you control.
+Calendar Sync is a custom component for Home Assistant that syncs events **from** one or more source calendars **to** one or more destination calendars, and keeps them in sync on a schedule you control.
 
 For each destination calendar, you choose source calendars to copy in full and/or source calendars to filter by title. It keeps things in sync by hashing each source event and storing the first 8 characters of that hash in the description of the copied event, so it can tell what it created, what changed, and what should be removed.
-
-> **This fork replaces the original `parent`/`child` YAML configuration with a UI-based setup (`from`/`to` naming) and built-in scheduling.** See [What changed](#what-changed-in-this-fork) below if you're coming from the original project.
 
 **Which Calendar Integrations Work?**
 
@@ -33,7 +31,7 @@ When my partner or I create events for the kids, we put their name in the event.
 - **Configured entirely through the UI** - Settings -> Devices & Services -> Add Integration
 - Copies events from one or more `from` calendars into a `to` calendar and keeps them in sync automatically on a schedule you set (in minutes)
 - A **"Sync now" button** and a **"Last sync" sensor** (with events-added / events-removed / error counts) are created for every sync you configure
-- A `family_calendar_sync.sync` action is still available for automations, and can target one sync or all of them
+- A `calendar_sync.sync` action is still available for automations, and can target one sync or all of them
 - If an event is added directly to a `to` calendar, it will not be touched by this integration
 - Specify how many days into the future (and past) to sync
 - Ignore source events whose title starts with a character you choose
@@ -49,16 +47,16 @@ This component is installed via [HACS](https://hacs.xyz).
 1. Install HACS first
 1. Go to **HACS** > **⁝** > **Custom repositories**
 1. Add this repository and choose **Integration**, then click **ADD**
-1. Go back to the main HACS landing page and search `family calendar sync`
+1. Go back to the main HACS landing page and search `calendar sync`
 1. Click on it, then click **Download**
 1. Restart Home Assistant
 
 ## Configuration
 
-Everything is configured through the UI - **YAML configuration is no longer supported** as of v0.2.0.
+Calendar Sync is configured entirely through the UI; YAML configuration is not supported.
 
 1. Go to **Settings -> Devices & Services -> Add Integration**
-1. Search for **Family Calendar Sync**
+1. Search for **Calendar Sync**
 1. For each destination calendar you want to sync events into, add a new instance:
    - **Sync to calendar** - the destination calendar (e.g. `calendar.snoop`)
    - **Sync every event from these calendar(s)** *(optional)* - sources whose events are all copied
@@ -100,7 +98,7 @@ Family structure:
   - Scott Pilgrim (kid) - `calendar.scott_pilgrim`
   - Cupid (kid) - `calendar.cupid`
 
-You'd add **five** Family Calendar Sync instances, one per destination calendar:
+You'd add **five** Calendar Sync instances, one per destination calendar:
 
 | Sync to | Sync every event from | Sync matching events from | Title keywords |
 |---|---|---|---|
@@ -114,37 +112,21 @@ Here is what the synced calendar looks like:
 
 ![screenshot](assets/screenshot.png)
 
-### The `family_calendar_sync.sync` action
+### The `calendar_sync.sync` action
 
 Since every sync already runs on its own schedule, you shouldn't need this for normal use - but it's there for automations that want to force an immediate sync (e.g. after a "I just added an event" trigger).
 
 ```yaml
 # Sync everything
-action: family_calendar_sync.sync
+action: calendar_sync.sync
 
 # Sync just one destination calendar's config entry
-action: family_calendar_sync.sync
+action: calendar_sync.sync
 data:
   config_entry_id: 01ABCXYZ...   # find this on the sync's device page
 ```
 
 Or just press its **Sync now** button instead.
-
-## What changed in this fork
-
-This fork restructures the original YAML-only integration into a config-flow-based (UI) integration, and renames `parent`/`child` to `from`/`to` throughout:
-
-- **UI configuration** instead of `configuration.yaml` - one config entry per destination (`to`) calendar, added/edited from Settings -> Devices & Services
-- **`parent` -> `from`, `child` -> `to`** in every setting, entity, and internal class name
-- **Automatic scheduled syncing** with a configurable interval (previously required you to build your own automation calling the service on a timer)
-- **`sensor.*_last_sync`** and **`button.*_sync_now`** entities for visibility and manual control per sync
-- **Bug fix:** `copy_all_from` with no keywords previously never synced anything - a `set` was being compared to a `str` with `==` instead of checking membership with `in`. Fixed, and the config flow now refuses to save a sync that would never copy anything.
-- **Bug fix:** all-day events whose start/end dates arrived as ISO strings instead of `date` objects would crash with `TypeError` when the integration tried to extend a zero-length event
-- **Robustness:** one calendar backend rejecting a single event no longer aborts the rest of that sync run; failures are logged and counted instead
-- **Robustness:** `from`/`to` calendars are loaded concurrently instead of one at a time
-- **Test suite** using `pytest` + `pytest-homeassistant-custom-component` (see [Development](#development))
-
-**This is a breaking change** if you're upgrading from a YAML-based install: your `family_calendar_sync:` YAML block is no longer read (you'll see a repair notice pointing you to the UI), and you'll need to recreate your syncs through **Add Integration**.
 
 ## Development
 
@@ -156,7 +138,7 @@ pytest
 Tests are split by concern:
 - `tests/test_calendar_sync.py` - the sync engine itself (hashing, keyword matching, date-handling edge cases, the `copy_all_from` regression, error isolation) against a lightweight fake `hass`
 - `tests/test_config_flow.py` - the config flow and options flow, using the real Home Assistant test harness
-- `tests/test_init.py` - entry setup/unload and the `family_calendar_sync.sync` action
+- `tests/test_init.py` - entry setup/unload and the `calendar_sync.sync` action
 
 ## TODO
 

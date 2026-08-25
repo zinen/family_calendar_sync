@@ -1,4 +1,4 @@
-"""Sensor platform for Family Calendar Sync - shows the status of the last sync."""
+"""Sensor platform for Calendar Sync - shows the status of the last sync."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the Family Calendar Sync sensor for this entry."""
+    """Set up the Calendar Sync sensor for this entry."""
     coordinator: FamilyCalendarSyncCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities([LastSyncSensor(coordinator, entry)])
 

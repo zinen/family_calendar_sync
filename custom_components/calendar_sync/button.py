@@ -1,4 +1,4 @@
-"""Button platform for Family Calendar Sync - manual 'Sync now' trigger."""
+"""Button platform for Calendar Sync - manual 'Sync now' trigger."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the Family Calendar Sync 'Sync now' button for this entry."""
+    """Set up the Calendar Sync 'Sync now' button for this entry."""
     coordinator: FamilyCalendarSyncCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities([SyncNowButton(coordinator, entry)])
 

@@ -14,7 +14,7 @@ import pytest
 
 from homeassistant.util import dt as dt_util
 
-from custom_components.family_calendar_sync.calendar_sync import (
+from custom_components.calendar_sync.calendar_sync import (
     FromEvent,
     SyncDateRange,
     SyncWorker,

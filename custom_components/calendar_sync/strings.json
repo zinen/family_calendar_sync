@@ -2,7 +2,7 @@
     "config": {
         "step": {
             "user": {
-                "title": "Add a Family Calendar Sync",
+                "title": "Add a Calendar Sync",
                 "description": "Choose a destination, then choose source calendars to sync in full and/or source calendars to filter by title.",
                 "data": {
                     "to_entity_id": "Sync to calendar",
@@ -31,13 +31,13 @@
             "keywords_required_for_matching_calendars": "Add at least one title keyword or phrase for the filtered source calendars."
         },
         "abort": {
-            "already_configured": "This calendar already has a Family Calendar Sync configured."
+            "already_configured": "This calendar already has a Calendar Sync configured."
         }
     },
     "options": {
         "step": {
             "init": {
-                "title": "Family Calendar Sync settings",
+                "title": "Calendar Sync settings",
                 "description": "Editing sync settings for {to_entity_id}. Choose full-sync and filtered sources separately.",
                 "data": {
                     "copy_all_from": "Sync every event from these calendar(s)",
@@ -79,14 +79,14 @@
     },
     "issues": {
         "yaml_no_longer_supported": {
-            "title": "Family Calendar Sync no longer supports YAML configuration",
-            "description": "Family Calendar Sync is now configured entirely through the UI.\n\nGo to **Settings -> Devices & Services -> Add Integration -> Family Calendar Sync** to recreate your sync(s), then remove the `family_calendar_sync:` section from `configuration.yaml`."
+            "title": "Calendar Sync does not support YAML configuration",
+            "description": "Calendar Sync is configured entirely through the UI.\n\nGo to **Settings -> Devices & Services -> Add Integration -> Calendar Sync**."
         }
     },
     "services": {
         "sync": {
             "name": "Sync now",
-            "description": "Triggers an immediate sync for one Family Calendar Sync entry, or all of them if none is specified.",
+            "description": "Triggers an immediate sync for one Calendar Sync entry, or all of them if none is specified.",
             "fields": {
                 "config_entry_id": {
                     "name": "Config entry ID",

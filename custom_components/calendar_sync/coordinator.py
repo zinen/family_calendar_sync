@@ -1,4 +1,4 @@
-"""DataUpdateCoordinator for Family Calendar Sync."""
+"""DataUpdateCoordinator for Calendar Sync."""
 
 from __future__ import annotations
 

@@ -1,8 +1,8 @@
-"""Constants for Family Calendar Sync component."""
+"""Constants for Calendar Sync component."""
 
 from homeassistant.const import Platform
 
-DOMAIN = "family_calendar_sync"
+DOMAIN = "calendar_sync"
 SERVICE_SYNC = "sync"
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.BUTTON]

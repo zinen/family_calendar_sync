@@ -7,7 +7,7 @@ from homeassistant.data_entry_flow import FlowResultType
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.family_calendar_sync.const import (
+from custom_components.calendar_sync.const import (
     CONF_COPY_ALL_FROM,
     CONF_FROM_ENTITIES,
     CONF_KEYWORDS,

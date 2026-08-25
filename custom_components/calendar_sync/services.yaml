@@ -1,14 +1,14 @@
 sync:
   name: Sync now
   description: >-
-    Triggers an immediate sync for one Family Calendar Sync entry, or all
+    Triggers an immediate sync for one Calendar Sync entry, or all
     configured entries if config_entry_id is omitted.
   fields:
     config_entry_id:
       name: Config entry ID
       description: >-
         The config entry ID to sync (see Settings -> Devices & Services ->
-        Family Calendar Sync -> ... -> Device info). Leave empty to sync
+        Calendar Sync -> ... -> Device info). Leave empty to sync
         every configured entry.
       required: false
       selector:
