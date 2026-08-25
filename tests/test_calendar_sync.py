@@ -7,12 +7,16 @@ hass.services.async_call. This keeps the tests fast and focused on our own
 logic.
 """
 
+from dataclasses import asdict
 from datetime import date, datetime, timedelta
 
 import pytest
 
+from homeassistant.util import dt as dt_util
+
 from custom_components.family_calendar_sync.calendar_sync import (
     FromEvent,
+    SyncDateRange,
     SyncWorker,
     ToCalendar,
     ToEvent,
@@ -28,6 +32,40 @@ def _base_options() -> dict:
         "days_to_sync_past": 30,
         "ignore_event_if_title_starts_with": None,
     }
+
+
+# --- Sync range -------------------------------------------------------------
+
+
+def test_sync_date_range_uses_whole_calendar_days():
+    """Zero past days includes events from earlier on the current date."""
+    sync_range = SyncDateRange(
+        start=datetime(2026, 3, 1, 15, 30),
+        days_to_sync=7,
+        days_to_sync_past=0,
+    )
+
+    assert sync_range.start_including_past == dt_util.start_of_local_day(
+        sync_range.start
+    )
+    assert sync_range.end == dt_util.start_of_local_day(
+        sync_range.start
+    ) + timedelta(days=8)
+
+
+def test_sync_date_range_extends_by_complete_past_days():
+    sync_range = SyncDateRange(
+        start=datetime(2026, 3, 1, 15, 30),
+        days_to_sync=0,
+        days_to_sync_past=2,
+    )
+
+    assert sync_range.start_including_past == dt_util.start_of_local_day(
+        sync_range.start
+    ) - timedelta(days=2)
+    assert sync_range.end == dt_util.start_of_local_day(sync_range.start) + timedelta(
+        days=1
+    )
 
 
 # --- Event / hashing -------------------------------------------------------
@@ -91,6 +129,18 @@ def test_keyword_match_is_case_insensitive():
         keywords=["Soccer"],
     )
     assert to_cal.is_a_keyword_match("SOCCER practice") is True
+
+
+def test_keyword_match_supports_multi_word_phrases():
+    fake_hass = make_fake_hass([FakeCalendarEntity("calendar.kids")])
+    to_cal = ToCalendar(
+        hass=fake_hass,
+        entity_id="calendar.kids",
+        sync_date_range=None,
+        keywords=["with kids"],
+    )
+    assert to_cal.is_a_keyword_match("Dinner With Kids!") is True
+    assert to_cal.is_a_keyword_match("Dinner without children") is False
 
 
 def test_keyword_match_escapes_regex_special_characters():
@@ -288,6 +338,45 @@ async def test_stale_to_event_is_removed_when_source_event_is_gone():
     }
 
     result = await sync_family_calendar(fake_hass, config)
+
+    assert result["events_removed"] == 1
+    to_entity.async_delete_event.assert_awaited_once_with("to-uid-1")
+
+
+@pytest.mark.asyncio
+async def test_stale_to_event_is_removed_when_it_no_longer_matches_filter():
+    """A source event that remains present must be removed when deselected."""
+    source_calendar_event = timed_event("Dentist", uid="source-uid-1")
+    source_event = FromEvent(asdict(source_calendar_event))
+    copied_description = source_event.get_data_for_to_event()["description"]
+
+    from_entity = FakeCalendarEntity(
+        "calendar.parent1", events=[source_calendar_event]
+    )
+    to_entity = FakeCalendarEntity(
+        "calendar.kids",
+        events=[
+            timed_event(
+                "Dentist", description=copied_description, uid="to-uid-1"
+            )
+        ],
+    )
+    fake_hass = make_fake_hass([from_entity, to_entity])
+
+    result = await sync_family_calendar(
+        fake_hass,
+        {
+            "from": [{"entity_id": "calendar.parent1"}],
+            "to": [
+                {
+                    "entity_id": "calendar.kids",
+                    "keywords": ["soccer"],
+                    "copy_all_from": [],
+                }
+            ],
+            "options": _base_options(),
+        },
+    )
 
     assert result["events_removed"] == 1
     to_entity.async_delete_event.assert_awaited_once_with("to-uid-1")

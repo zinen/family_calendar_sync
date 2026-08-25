@@ -44,7 +44,17 @@ def build_sync_config(entry: ConfigEntry) -> dict:
     """Translate a config entry (data + options) into the dict `SyncWorker` expects."""
     options = entry.options
     to_entity_id = entry.data[CONF_TO_ENTITY_ID]
-    from_entities = options.get(CONF_FROM_ENTITIES, [])
+    # ``from_entities`` contains the union of full-sync and filtered sources.
+    # Include copy-all calendars as well so entries created by older versions
+    # (where it was a subset) and partially migrated entries remain valid.
+    from_entities = list(
+        dict.fromkeys(
+            [
+                *options.get(CONF_FROM_ENTITIES, []),
+                *options.get(CONF_COPY_ALL_FROM, []),
+            ]
+        )
+    )
 
     return {
         "from": [{"entity_id": entity_id} for entity_id in from_entities],

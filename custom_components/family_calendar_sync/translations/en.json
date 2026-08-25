@@ -3,28 +3,32 @@
         "step": {
             "user": {
                 "title": "Add a Family Calendar Sync",
-                "description": "Choose the calendar events should be synced **to**, then choose which calendar(s) to sync events **from**.",
+                "description": "Choose a destination, then choose source calendars to sync in full and/or source calendars to filter by title.",
                 "data": {
                     "to_entity_id": "Sync to calendar",
-                    "from_entities": "Sync from calendar(s)",
-                    "copy_all_from": "Copy all events from these calendar(s)",
-                    "keywords": "Only copy events matching these keywords",
-                    "ignore_event_if_title_starts_with": "Ignore source events whose title starts with",
+                    "copy_all_from": "Sync every event from these calendar(s)",
+                    "from_entities": "Sync matching events from these calendar(s)",
+                    "keywords": "Match these words or phrases in the event title",
+                    "ignore_event_if_title_starts_with": "Do not sync events whose title starts with",
                     "days_to_sync": "Days ahead to sync",
                     "days_to_sync_past": "Days in the past to sync",
                     "sync_interval_minutes": "Sync every (minutes)"
                 },
                 "data_description": {
-                    "copy_all_from": "Every event on these calendars is copied, regardless of keywords. Must be a subset of the calendars chosen above.",
-                    "keywords": "Leave empty to only use 'Copy all events from'. At least one of keywords or copy-all is required."
+                    "copy_all_from": "Every event from these source calendars is copied. Do not also select the same calendar under filtered sync.",
+                    "from_entities": "Only events whose title matches a word or phrase below are copied from these calendars.",
+                    "keywords": "Required when using filtered sync. Matching is case-insensitive and uses whole words/phrases in the event title only; descriptions are not searched.",
+                    "ignore_event_if_title_starts_with": "Applied before all other rules, to every source calendar. This prefix check is case-sensitive. For example, use ! to exclude !Private event.",
+                    "days_to_sync": "Copy the whole current day plus this many full calendar days ahead.",
+                    "days_to_sync_past": "Add this many complete calendar days before today. A value of 0 still includes all events from today."
                 }
             }
         },
         "error": {
-            "no_from_entities_selected": "Choose at least one calendar to sync from.",
+            "no_source_calendars_selected": "Choose at least one source calendar to sync.",
             "to_cannot_be_from": "The destination calendar can't also be a source calendar.",
-            "copy_all_from_not_in_from_entities": "'Copy all events from' can only include calendars chosen in 'Sync from calendar(s)'.",
-            "no_keywords_or_copy_all_from": "Add at least one keyword or choose a calendar under 'Copy all events from' - otherwise nothing will ever be synced."
+            "calendar_in_both_sync_modes": "Choose each source calendar in either full sync or filtered sync, not both.",
+            "keywords_required_for_matching_calendars": "Add at least one title keyword or phrase for the filtered source calendars."
         },
         "abort": {
             "already_configured": "This calendar already has a Family Calendar Sync configured."
@@ -34,23 +38,31 @@
         "step": {
             "init": {
                 "title": "Family Calendar Sync settings",
-                "description": "Editing sync settings for {to_entity_id}.",
+                "description": "Editing sync settings for {to_entity_id}. Choose full-sync and filtered sources separately.",
                 "data": {
-                    "from_entities": "Sync from calendar(s)",
-                    "copy_all_from": "Copy all events from these calendar(s)",
-                    "keywords": "Only copy events matching these keywords",
-                    "ignore_event_if_title_starts_with": "Ignore source events whose title starts with",
+                    "copy_all_from": "Sync every event from these calendar(s)",
+                    "from_entities": "Sync matching events from these calendar(s)",
+                    "keywords": "Match these words or phrases in the event title",
+                    "ignore_event_if_title_starts_with": "Do not sync events whose title starts with",
                     "days_to_sync": "Days ahead to sync",
                     "days_to_sync_past": "Days in the past to sync",
                     "sync_interval_minutes": "Sync every (minutes)"
                 }
+                ,"data_description": {
+                    "copy_all_from": "Every event from these source calendars is copied. Do not also select the same calendar under filtered sync.",
+                    "from_entities": "Only events whose title matches a word or phrase below are copied from these calendars.",
+                    "keywords": "Required when using filtered sync. Matching is case-insensitive and uses whole words/phrases in the event title only; descriptions are not searched.",
+                    "ignore_event_if_title_starts_with": "Applied before all other rules, to every source calendar. This prefix check is case-sensitive.",
+                    "days_to_sync": "Copy the whole current day plus this many full calendar days ahead.",
+                    "days_to_sync_past": "Add this many complete calendar days before today. A value of 0 still includes all events from today."
+                }
             }
         },
         "error": {
-            "no_from_entities_selected": "Choose at least one calendar to sync from.",
+            "no_source_calendars_selected": "Choose at least one source calendar to sync.",
             "to_cannot_be_from": "The destination calendar can't also be a source calendar.",
-            "copy_all_from_not_in_from_entities": "'Copy all events from' can only include calendars chosen in 'Sync from calendar(s)'.",
-            "no_keywords_or_copy_all_from": "Add at least one keyword or choose a calendar under 'Copy all events from' - otherwise nothing will ever be synced."
+            "calendar_in_both_sync_modes": "Choose each source calendar in either full sync or filtered sync, not both.",
+            "keywords_required_for_matching_calendars": "Add at least one title keyword or phrase for the filtered source calendars."
         }
     },
     "entity": {

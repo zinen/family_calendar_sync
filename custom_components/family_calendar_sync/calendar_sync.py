@@ -30,15 +30,21 @@ class SyncDateRange:
 
     @property
     def end(self) -> datetime:
-        """Return the end datetime."""
-        end_datetime = self.start + timedelta(days=self.days_to_sync)
-        return dt_util.as_local(end_datetime)
+        """Return the exclusive end of the final calendar day to sync."""
+        return dt_util.start_of_local_day(self.start) + timedelta(
+            days=self.days_to_sync + 1
+        )
 
     @property
     def start_including_past(self) -> datetime:
-        """Return the start datetime including past boundary."""
-        start_datetime = self.start - timedelta(days=self.days_to_sync_past)
-        return dt_util.as_local(start_datetime)
+        """Return local midnight for the first calendar day to sync.
+
+        A value of zero deliberately includes the entirety of the current
+        calendar day, including events that ended before this sync began.
+        """
+        return dt_util.start_of_local_day(self.start) - timedelta(
+            days=self.days_to_sync_past
+        )
 
 
 @dataclass
@@ -570,18 +576,22 @@ class SyncWorker:
                 self.num_of_to_calendars,
             )
 
-    def _set_of_hashes_by_cal_type(self, cal_type: str) -> set:
-        result: set[str] = set()
-        for cal in self.calendars[cal_type]:
-            result.update(cal.hash_set)
-        return result
+    def _desired_hashes_for_to_calendar(self, to_cal: ToCalendar) -> set[str]:
+        """Return source-event hashes that should currently appear in a destination."""
+        copy_all_parents = self._copy_all_map.get(to_cal.entity_id, set())
+        return {
+            event.hashed_value
+            for from_cal in self.calendars["from"]
+            for event in from_cal.events
+            if from_cal.entity_id in copy_all_parents
+            or to_cal.is_a_keyword_match(event.title)
+        }
 
-    async def _async_remove_events_from_to_cals(self, event_hashes: set[str]) -> None:
-        """Remove stale events from `to` calendars."""
-        for cal in self.calendars["to"]:
-            self.stats.events_removed += await cal.async_delete_event_from_ha(
-                event_hashes
-            )
+    async def _async_remove_stale_events(self, to_cal: ToCalendar) -> None:
+        """Remove integration-created events no longer selected for this destination."""
+        desired_hashes = self._desired_hashes_for_to_calendar(to_cal)
+        stale_hashes = to_cal.hash_set - desired_hashes
+        self.stats.events_removed += await to_cal.async_delete_event_from_ha(stale_hashes)
 
     async def _async_sync_pair(
         self, from_cal: FromCalendar, to_cal: ToCalendar
@@ -612,13 +622,11 @@ class SyncWorker:
 
     async def async_sync_calendars(self) -> SyncStats:
         """Sync `from` calendar events into `to` calendars. Returns run stats."""
-        # compare hashes to find destination events whose source no longer exists
-        from_hashes = self._set_of_hashes_by_cal_type("from")
-        to_hashes = self._set_of_hashes_by_cal_type("to")
-        need_removed = to_hashes - from_hashes
-        # TODO: Need to reparse all events in case config has changed.
-        # Can a previous config be saved to do a diff against?
-        await self._async_remove_events_from_to_cals(need_removed)
+        # Removal is evaluated per destination, including the active filter.
+        # This also removes an event if its source still exists but no longer
+        # matches the configured keywords.
+        for to_cal in self.calendars["to"]:
+            await self._async_remove_stale_events(to_cal)
 
         # Only sync `from` calendars into their designated `to` calendars
         for to_cal in self.calendars["to"]:

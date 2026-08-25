@@ -41,6 +41,16 @@ def _sync_settings_schema(defaults: dict[str, Any], *, include_to: bool) -> vol.
     """Build the shared schema for the create/options forms."""
     fields: dict[Any, Any] = {}
 
+    # ``from_entities`` used to contain every source, while ``copy_all_from``
+    # was a subset of it.  Keep that on-disk format for compatibility, but
+    # present the two user decisions independently in the UI.
+    copy_all_from = defaults.get(CONF_COPY_ALL_FROM, [])
+    matching_from = [
+        entity_id
+        for entity_id in defaults.get(CONF_FROM_ENTITIES, [])
+        if entity_id not in copy_all_from
+    ]
+
     if include_to:
         fields[vol.Required(CONF_TO_ENTITY_ID)] = _calendar_entity_selector(
             multiple=False
@@ -48,11 +58,11 @@ def _sync_settings_schema(defaults: dict[str, Any], *, include_to: bool) -> vol.
 
     fields.update(
         {
-            vol.Required(
-                CONF_FROM_ENTITIES, default=defaults.get(CONF_FROM_ENTITIES, [])
+            vol.Optional(
+                CONF_COPY_ALL_FROM, default=copy_all_from
             ): _calendar_entity_selector(multiple=True),
             vol.Optional(
-                CONF_COPY_ALL_FROM, default=defaults.get(CONF_COPY_ALL_FROM, [])
+                CONF_FROM_ENTITIES, default=matching_from
             ): _calendar_entity_selector(multiple=True),
             vol.Optional(
                 CONF_KEYWORDS, default=defaults.get(CONF_KEYWORDS, [])
@@ -105,32 +115,37 @@ def _validate_sync_settings(
     """
     errors: dict[str, str] = {}
 
-    from_entities = set(user_input.get(CONF_FROM_ENTITIES, []))
+    matching_from = set(user_input.get(CONF_FROM_ENTITIES, []))
     copy_all_from = set(user_input.get(CONF_COPY_ALL_FROM, []))
     keywords = [k for k in user_input.get(CONF_KEYWORDS, []) if k.strip()]
+    all_sources = matching_from | copy_all_from
 
-    if not from_entities:
-        errors[CONF_FROM_ENTITIES] = "no_from_entities_selected"
-    elif to_entity_id in from_entities:
+    if not all_sources:
+        errors["base"] = "no_source_calendars_selected"
+    elif to_entity_id in matching_from:
         errors[CONF_FROM_ENTITIES] = "to_cannot_be_from"
+    elif to_entity_id in copy_all_from:
+        errors[CONF_COPY_ALL_FROM] = "to_cannot_be_from"
 
-    if not errors and not copy_all_from.issubset(from_entities):
-        errors[CONF_COPY_ALL_FROM] = "copy_all_from_not_in_from_entities"
+    if not errors and matching_from & copy_all_from:
+        errors[CONF_FROM_ENTITIES] = "calendar_in_both_sync_modes"
 
-    # This is the exact condition that silently did nothing in the old
-    # YAML-only version: no keywords and no copy_all_from entities means
-    # this `to` calendar would never receive any events.
-    if not errors and not keywords and not copy_all_from:
-        errors["base"] = "no_keywords_or_copy_all_from"
+    if not errors and matching_from and not keywords:
+        errors[CONF_KEYWORDS] = "keywords_required_for_matching_calendars"
 
     return errors
 
 
 def _options_from_user_input(user_input: dict[str, Any]) -> dict[str, Any]:
+    """Store the source union in the legacy-compatible options format."""
     keywords = [k.strip() for k in user_input.get(CONF_KEYWORDS, []) if k.strip()]
+    copy_all_from = user_input.get(CONF_COPY_ALL_FROM, [])
+    matching_from = user_input.get(CONF_FROM_ENTITIES, [])
+    # dict preserves selection order while removing any duplicate defensively.
+    from_entities = list(dict.fromkeys([*copy_all_from, *matching_from]))
     return {
-        CONF_FROM_ENTITIES: user_input[CONF_FROM_ENTITIES],
-        CONF_COPY_ALL_FROM: user_input.get(CONF_COPY_ALL_FROM, []),
+        CONF_FROM_ENTITIES: from_entities,
+        CONF_COPY_ALL_FROM: copy_all_from,
         CONF_KEYWORDS: keywords,
         CONF_IGNORE_PREFIX: user_input.get(CONF_IGNORE_PREFIX, ""),
         CONF_DAYS_TO_SYNC: user_input.get(CONF_DAYS_TO_SYNC, DEFAULT_DAYS_TO_SYNC),

@@ -2,7 +2,7 @@
 
 [Family Calendar Sync](https://github.com/McCroden/family_calendar_sync) is a custom component for Home Assistant that syncs events **from** one or more source calendars **to** one or more destination calendars, and keeps them in sync on a schedule you control.
 
-You point it at one or more `from` calendar entities, and a `to` calendar entity to copy events into. You can copy every event, or only events whose title matches a keyword (e.g. a family member's name). It keeps things in sync by hashing each source event and storing the first 8 characters of that hash in the description of the copied event, so it can tell what it created, what changed, and what should be removed.
+For each destination calendar, you choose source calendars to copy in full and/or source calendars to filter by title. It keeps things in sync by hashing each source event and storing the first 8 characters of that hash in the description of the copied event, so it can tell what it created, what changed, and what should be removed.
 
 > **This fork replaces the original `parent`/`child` YAML configuration with a UI-based setup (`from`/`to` naming) and built-in scheduling.** See [What changed](#what-changed-in-this-fork) below if you're coming from the original project.
 
@@ -37,7 +37,8 @@ When my partner or I create events for the kids, we put their name in the event.
 - If an event is added directly to a `to` calendar, it will not be touched by this integration
 - Specify how many days into the future (and past) to sync
 - Ignore source events whose title starts with a character you choose
-- A `to` calendar can match on many keywords (e.g. a name, "family", "kids", etc.), and/or copy everything from specific `from` calendars via `copy_all_from`
+- Choose full-sync and filtered source calendars independently for each destination
+- Filtered sources can match many title keywords or phrases (e.g. a name, "family", "with kids")
 - Only deletes a `to` event if this integration created it **and** the matching source event is gone or no longer matches
 - A single bad event (e.g. a calendar backend rejecting one create call) is logged and skipped rather than aborting the whole sync run
 
@@ -60,15 +61,31 @@ Everything is configured through the UI - **YAML configuration is no longer supp
 1. Search for **Family Calendar Sync**
 1. For each destination calendar you want to sync events into, add a new instance:
    - **Sync to calendar** - the destination calendar (e.g. `calendar.snoop`)
-   - **Sync from calendar(s)** - one or more source calendars to read events from
-   - **Copy all events from these calendar(s)** *(optional)* - a subset of the "from" calendars whose events should *all* be copied, regardless of keywords
-   - **Only copy events matching these keywords** *(optional)* - e.g. a name, "family", "kids". Matched case-insensitively against event titles, as whole words
-   - **Ignore source events whose title starts with** *(optional)* - e.g. `!` for private events the kids don't need to see
-   - **Days ahead / Days in the past to sync**
+   - **Sync every event from these calendar(s)** *(optional)* - sources whose events are all copied
+   - **Sync matching events from these calendar(s)** *(optional)* - sources from which only matching events are copied
+   - **Match these words or phrases in the event title** - required when using filtered sources; e.g. a name, "family", or "with kids"
+   - **Do not sync events whose title starts with** *(optional)* - e.g. `!` for private events the kids don't need to see
+   - **Days ahead / Days in the past to sync** - the component uses complete calendar days. The default of 7 days ahead and 0 days in the past copies all of today plus the next seven days; it includes an event that finished earlier today. Increase the past value to include complete earlier dates.
    - **Sync every (minutes)** - how often this sync runs automatically
 1. Repeat for each destination calendar
 
-> At least one of "keywords" or "copy all events from" is required - the UI will block saving a sync that would never copy anything.
+> Select at least one source calendar. A source calendar may be in either full sync or filtered sync, but not both.
+
+### How filtering works
+
+Filtering looks at the event **title only**, not its description or location. Each keyword or phrase is matched case-insensitively at word boundaries, so `with kids` matches `Dinner With Kids` and `kids` matches `Kids' soccer`, but `art` does not match `party`. Punctuation around a match is fine.
+
+The optional ignore prefix is checked against the title first, before full or filtered sync. It is case-sensitive: entering `!` prevents `!Private appointment` from being copied, even if its source is a full-sync calendar or its title otherwise matches a keyword.
+
+### Common setups
+
+| Goal | Sync every event from | Sync matching events from | Title keywords | Destination |
+|---|---|---|---|---|
+| One complete calendar into another | `calendar.personal` | *(none)* | *(none)* | `calendar.family` |
+| Two calendars combined into a third | `calendar.parent_one`, `calendar.parent_two` | *(none)* | *(none)* | `calendar.household` |
+| Only events marked for the kids | *(none)* | `calendar.personal` | `with kids` | `calendar.kids` |
+
+For the last setup, enter `!` as the ignore prefix to exclude titles such as `!With kids - surprise`.
 
 Each configured sync gets its own device with two entities:
 - `sensor.<to_calendar>_last_sync` - timestamp of the last run, with `events_added`, `events_removed`, and `errors` attributes
@@ -85,13 +102,13 @@ Family structure:
 
 You'd add **five** Family Calendar Sync instances, one per destination calendar:
 
-| Sync to | Sync from | Copy all from | Keywords |
+| Sync to | Sync every event from | Sync matching events from | Title keywords |
 |---|---|---|---|
-| `calendar.dad` | napoleon_dynamite, nomi_malone | napoleon_dynamite | dad, napoleon, family |
-| `calendar.mom` | napoleon_dynamite, nomi_malone | nomi_malone | mom, nomi, family |
-| `calendar.snoop` | napoleon_dynamite, nomi_malone | *(none)* | snoop, family, kids, kiddos |
-| `calendar.scott_pilgrim` | napoleon_dynamite, nomi_malone | *(none)* | scott, family, kids, kiddos |
-| `calendar.cupid` | napoleon_dynamite, nomi_malone | *(none)* | cupid, family, kids, kiddos |
+| `calendar.dad` | napoleon_dynamite | nomi_malone | dad, napoleon, family |
+| `calendar.mom` | nomi_malone | napoleon_dynamite | mom, nomi, family |
+| `calendar.snoop` | *(none)* | napoleon_dynamite, nomi_malone | snoop, family, kids, kiddos |
+| `calendar.scott_pilgrim` | *(none)* | napoleon_dynamite, nomi_malone | scott, family, kids, kiddos |
+| `calendar.cupid` | *(none)* | napoleon_dynamite, nomi_malone | cupid, family, kids, kiddos |
 
 Here is what the synced calendar looks like:
 
