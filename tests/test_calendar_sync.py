@@ -89,6 +89,15 @@ def test_from_event_hash_roundtrips_through_to_event():
     assert f"[{event.hashed_value}]" in to_data["description"]
 
 
+def test_to_event_hash_must_be_at_the_end_of_the_description():
+    """Only the marker Calendar Sync appends is treated as an ownership hash."""
+    assert (
+        ToEvent({"description": "Reference [deadbeef] - do not remove"}).hashed_value
+        is None
+    )
+    assert ToEvent({"description": "Reference [deadbeef] \n"}).hashed_value == "deadbeef"
+
+
 def test_from_event_hash_changes_when_event_content_changes():
     """Different event content must hash differently (used to detect edits)."""
     base = {

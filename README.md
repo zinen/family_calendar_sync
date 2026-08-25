@@ -2,7 +2,7 @@
 
 Calendar Sync is a custom component for Home Assistant that syncs events **from** one or more source calendars **to** one or more destination calendars, and keeps them in sync on a schedule you control.
 
-For each destination calendar, you choose source calendars to copy in full and/or source calendars to filter by title. It keeps things in sync by hashing each source event and storing the first 8 characters of that hash in the description of the copied event, so it can tell what it created, what changed, and what should be removed.
+For each destination calendar, you choose source calendars to copy in full and/or source calendars to filter by title. It keeps things in sync by hashing each source event and storing the first 8 characters of that hash at the end of the copied event's description, so it can tell what it created, what changed, and what should be removed.
 
 **Which Calendar Integrations Work?**
 
@@ -74,6 +74,12 @@ Calendar Sync is configured entirely through the UI; YAML configuration is not s
 Filtering looks at the event **title only**, not its description or location. Each keyword or phrase is matched case-insensitively at word boundaries, so `with kids` matches `Dinner With Kids` and `kids` matches `Kids' soccer`, but `art` does not match `party`. Punctuation around a match is fine.
 
 The optional ignore prefix is checked against the title first, before full or filtered sync. It is case-sensitive: entering `!` prevents `!Private appointment` from being copied, even if its source is a full-sync calendar or its title otherwise matches a keyword.
+
+### Synced-event marker
+
+Calendar Sync appends an eight-character marker such as `[a1b2c3d4]` to the **end** of every description it creates. This marker identifies an event as integration-managed and lets Calendar Sync avoid duplicates and remove stale copies. A bracketed value elsewhere in a description is ignored.
+
+If you edit a copied event manually, keep the marker at the end if you want Calendar Sync to continue managing it. Adding text after the marker makes it a normal, unmanaged destination event.
 
 ### Common setups
 

@@ -13,7 +13,9 @@ from homeassistant.util import dt as dt_util
 
 from .const import DEFAULT_DAYS_TO_SYNC, DEFAULT_DAYS_TO_SYNC_PAST, HASH_LENGTH
 
-HASH_REGEX = re.compile(r"\[([a-z0-9]{8})\]", re.IGNORECASE)
+# Calendar Sync always appends this marker. Anchoring it avoids treating a
+# bracketed value in a user's normal description as an integration marker.
+HASH_REGEX = re.compile(r"\[([a-z0-9]{8})\]\s*\Z", re.IGNORECASE)
 
 MIN_EVENT_DURATION = timedelta(seconds=1)
 
@@ -163,7 +165,7 @@ class ToEvent(Event):
     """An event that already exists on a `to` (destination) calendar."""
 
     def _set_hashed_value(self) -> str | None:
-        """Extract the hashed_value from the event description field. None, if not found."""
+        """Extract the trailing hash marker from a description, if present."""
         hashed_value = None
         if description := self.description:
             if match := HASH_REGEX.search(description):
