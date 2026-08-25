@@ -7,7 +7,7 @@
                 "data": {
                     "to_entity_id": "Sync to calendar",
                     "copy_all_from": "Sync every event from these calendar(s)",
-                    "from_entities": "Sync matching events from these calendar(s)",
+                    "from_entities": "Filtered Sync: Sync matching events from these calendar(s)",
                     "keywords": "Match these words or phrases in the event title",
                     "ignore_event_if_title_starts_with": "Do not sync events whose title starts with",
                     "days_to_sync": "Days ahead to sync",
@@ -15,8 +15,8 @@
                     "sync_interval_minutes": "Sync every (minutes)"
                 },
                 "data_description": {
-                    "copy_all_from": "Every event from these source calendars is copied. Do not also select the same calendar under filtered sync.",
-                    "from_entities": "Only events whose title matches a word or phrase below are copied from these calendars.",
+                    "copy_all_from": "Every event from these source calendars is copied. Except those excluded by the optional do not sync rule. Do not also select the same calendar under filtered sync.",
+                    "from_entities": "Only events whose title matches a word or phrase below are copied from these calendars. Except those excluded by the optional do not sync rule.",
                     "keywords": "Required when using filtered sync. Matching is case-insensitive and uses whole words/phrases in the event title only; descriptions are not searched.",
                     "ignore_event_if_title_starts_with": "Applied before all other rules, to every source calendar. This prefix check is case-sensitive. For example, use ! to exclude !Private event.",
                     "days_to_sync": "Copy the whole current day plus this many full calendar days ahead.",
@@ -42,7 +42,7 @@
                 "description": "Editing sync settings for {to_entity_id}. Choose full-sync and filtered sources separately.",
                 "data": {
                     "copy_all_from": "Sync every event from these calendar(s)",
-                    "from_entities": "Sync matching events from these calendar(s)",
+                    "from_entities": "Filtered Sync: Sync matching events from these calendar(s)",
                     "keywords": "Match these words or phrases in the event title",
                     "ignore_event_if_title_starts_with": "Do not sync events whose title starts with",
                     "days_to_sync": "Days ahead to sync",
@@ -50,8 +50,8 @@
                     "sync_interval_minutes": "Sync every (minutes)"
                 }
                 ,"data_description": {
-                    "copy_all_from": "Every event from these source calendars is copied. Do not also select the same calendar under filtered sync.",
-                    "from_entities": "Only events whose title matches a word or phrase below are copied from these calendars.",
+                    "copy_all_from": "Every event from these source calendars is copied. Except those excluded by the optional do not sync rule. Do not also select the same calendar under filtered sync.",
+                    "from_entities": "Only events whose title matches a word or phrase below are copied from these calendars. Except those excluded by the optional do not sync rule.",
                     "keywords": "Required when using filtered sync. Matching is case-insensitive and uses whole words/phrases in the event title only; descriptions are not searched.",
                     "ignore_event_if_title_starts_with": "Applied before all other rules, to every source calendar. This prefix check is case-sensitive.",
                     "days_to_sync": "Copy the whole current day plus this many full calendar days ahead.",
