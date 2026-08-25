@@ -23,7 +23,7 @@ CONF_SYNC_INTERVAL_MINUTES = "sync_interval_minutes"
 # --- Defaults ------------------------------------------------------------
 DEFAULT_DAYS_TO_SYNC = 7
 DEFAULT_DAYS_TO_SYNC_PAST = 0
-DEFAULT_SYNC_INTERVAL_MINUTES = 15
+DEFAULT_SYNC_INTERVAL_MINUTES = 12 * 60
 MIN_SYNC_INTERVAL_MINUTES = 5
 
 HASH_LENGTH = 8

@@ -64,7 +64,7 @@ Calendar Sync is configured entirely through the UI; YAML configuration is not s
    - **Match these words or phrases in the event title** - required when using filtered sources; e.g. a name, "family", or "with kids"
    - **Do not sync events whose title starts with** *(optional)* - e.g. `!` for private events the kids don't need to see
    - **Days ahead / Days in the past to sync** - the component uses complete calendar days. The default of 7 days ahead and 0 days in the past copies all of today plus the next seven days; it includes an event that finished earlier today. Increase the past value to include complete earlier dates.
-   - **Sync every (minutes)** - how often this sync runs automatically
+   - **Sync every (minutes)** - how often this sync runs automatically; the default is 720 minutes (12 hours)
 1. Repeat for each destination calendar
 
 > Select at least one source calendar. A source calendar may be in either full sync or filtered sync, but not both.
