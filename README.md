@@ -1,19 +1,21 @@
 # family_calendar_sync
 
-[Family Calendar Sync](https://github.com/McCroden/family_calendar_sync) is a custom component for Home Assistant that will sync `parent` calendars to `child` calendars. It also keeps the calendars in sync---create an automation using the `family_calendar_sync` service on a recurring basis.
+[Family Calendar Sync](https://github.com/McCroden/family_calendar_sync) is a custom component for Home Assistant that syncs events **from** one or more source calendars **to** one or more destination calendars, and keeps them in sync on a schedule you control.
 
-The idea is to read from one or more `parent` calendar entities then copy the events to one or more `child` calendar entities. All of the events can be copied. Or just those that match a simple list of keywords, such as a name. It keeps them in sync by computing a hash of the `parent` calendar events and storing the first 8 characters of the hash in the description of the event on the `child` calendar.
+You point it at one or more `from` calendar entities, and a `to` calendar entity to copy events into. You can copy every event, or only events whose title matches a keyword (e.g. a family member's name). It keeps things in sync by hashing each source event and storing the first 8 characters of that hash in the description of the copied event, so it can tell what it created, what changed, and what should be removed.
+
+> **This fork replaces the original `parent`/`child` YAML configuration with a UI-based setup (`from`/`to` naming) and built-in scheduling.** See [What changed](#what-changed-in-this-fork) below if you're coming from the original project.
 
 **Which Calendar Integrations Work?**
 
 - CalDAV:
-    - Only works as `parent` because the integration doesn't have the ability to create an event.
+    - Only works as a `from` calendar - the integration can't create events.
 - Google Calendar:
-    - Works as both `parent` and `child` if it's set up with two-way sync permissions.
+    - Works as both `from` and `to` if it's set up with two-way sync permissions.
 - Local Calendar:
-    - Works as both `parent` and `child`.
+    - Works as both `from` and `to`.
 - Remote Calendar:
-    - Only works as `parent` because they are imported from remote.
+    - Only works as a `from` calendar - events are read-only/imported.
 
 ## Background
 
@@ -21,201 +23,128 @@ I saw the Skylight calendar and thought it looked cool. But I didn't like that I
 
 ### Our Family's Process
 
-I have an iCloud calendar and I Share it with my partner. My partner also has an iCloud calendar and Shares it with me. This is useful because if my partner adds an event titled "Dentist," I know it's for them. This came in handy when designing this component too because I can just say copy all of the events from my shared calendar to my local calendar named dad (see the example config for the `copy_all_from` config option). 
+I have an iCloud calendar and I share it with my partner. My partner also has an iCloud calendar and shares it with me. This is useful because if my partner adds an event titled "Dentist," I know it's for them. This came in handy when designing this component too, because I can just say "copy all of the events from my shared calendar to my local calendar named dad" (see `Copy all events from` below).
 
-When my partner or I create events for the kids we put their name in the event. I built this component to look for keywords (e.g. their name) and copy those events to their calendars. I put a couple examples in the Example Configuration section below.
+When my partner or I create events for the kids, we put their name in the event. This component looks for keywords (e.g. their name) and copies those events to their calendars.
 
 ## Features
 
-- Works for CalDAV (iCloud), Google Calendar, and Local Calendar entities
-- Copy events from one calendar to another and keep them in sync (by using an automation)
-- If an event is added to a `child` calendar, it will not be harmed by this service
-- Specify how many days in the future to sync
-- Ignore all events that start with a character you specify
-- `child` calendars can have many keywords to match against (e.g. their name, "family", "kids", etc.)
-- Only deletes a `child` event if Family Calendar Sync service created it **and** the event details no longer match the `parent`s event.
+- Works with CalDAV (iCloud), Google Calendar, and Local Calendar entities
+- **Configured entirely through the UI** - Settings -> Devices & Services -> Add Integration
+- Copies events from one or more `from` calendars into a `to` calendar and keeps them in sync automatically on a schedule you set (in minutes)
+- A **"Sync now" button** and a **"Last sync" sensor** (with events-added / events-removed / error counts) are created for every sync you configure
+- A `family_calendar_sync.sync` action is still available for automations, and can target one sync or all of them
+- If an event is added directly to a `to` calendar, it will not be touched by this integration
+- Specify how many days into the future (and past) to sync
+- Ignore source events whose title starts with a character you choose
+- A `to` calendar can match on many keywords (e.g. a name, "family", "kids", etc.), and/or copy everything from specific `from` calendars via `copy_all_from`
+- Only deletes a `to` event if this integration created it **and** the matching source event is gone or no longer matches
+- A single bad event (e.g. a calendar backend rejecting one create call) is logged and skipped rather than aborting the whole sync run
 
 ## Install
 
-This component is installed via [HACS](https://hacs.xyz). 
-
-### Method 1
+This component is installed via [HACS](https://hacs.xyz).
 
 1. Install HACS first
-1. Click this button [![Open in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=mccroden&repository=family_calendar_sync&category=integration)
-1. Click **Download** in the lower-right corner. Or, in the upper-right, click **⁝** > **Download**
-1. Restart Home Assistant
-
-### Method 2
-1. Install HACS first
-1. Go to **HACS** > **⁝** > **Custom repositories** 
-1. Add `McCroden/family_calendar_sync` and choose **Integration** then click **ADD**
+1. Go to **HACS** > **⁝** > **Custom repositories**
+1. Add this repository and choose **Integration**, then click **ADD**
 1. Go back to the main HACS landing page and search `family calendar sync`
-1. Click on it
-1. Click **Download** in the lower-right corner. If the Download button isn't there: in the upper-right, click **⁝** > **Download**
+1. Click on it, then click **Download**
 1. Restart Home Assistant
 
-### Configuration
+## Configuration
 
-This component is configured using your `configuration.yaml` file. It has three main sections: options, parent, and child.
+Everything is configured through the UI - **YAML configuration is no longer supported** as of v0.2.0.
 
-#### `options`
+1. Go to **Settings -> Devices & Services -> Add Integration**
+1. Search for **Family Calendar Sync**
+1. For each destination calendar you want to sync events into, add a new instance:
+   - **Sync to calendar** - the destination calendar (e.g. `calendar.snoop`)
+   - **Sync from calendar(s)** - one or more source calendars to read events from
+   - **Copy all events from these calendar(s)** *(optional)* - a subset of the "from" calendars whose events should *all* be copied, regardless of keywords
+   - **Only copy events matching these keywords** *(optional)* - e.g. a name, "family", "kids". Matched case-insensitively against event titles, as whole words
+   - **Ignore source events whose title starts with** *(optional)* - e.g. `!` for private events the kids don't need to see
+   - **Days ahead / Days in the past to sync**
+   - **Sync every (minutes)** - how often this sync runs automatically
+1. Repeat for each destination calendar
 
-Type: Map
+> At least one of "keywords" or "copy all events from" is required - the UI will block saving a sync that would never copy anything.
 
-- **Purpose**: Configure global settings for how calendar events are synchronized.
-- Map keys:
-    - `days_to_sync` (optional):
-        - **Type**: Integer
-        - **Description**: The number of days into the future for which events should be synchronized. Default, 7.
-    - `days_to_sync_past` (optional):
-        - **Type**: Integer
-        - **Description**: The number of days into the past for which events should be synchronized. Default, 0.
-    - `ignore_event_if_title_starts_with` (optional):
-        - **Type**: String
-        - **Description**: If an event title starts with this string, the event will be ignored during synchronization. Because sometimes the kids don't need to know everything going on 😉.
+Each configured sync gets its own device with two entities:
+- `sensor.<to_calendar>_last_sync` - timestamp of the last run, with `events_added`, `events_removed`, and `errors` attributes
+- `button.<to_calendar>_sync_now` - triggers an immediate sync
 
-#### `parent`
+### Example setup
 
-Type: List
+Family structure:
+  - Napoleon Dynamite (dad) - `calendar.napoleon_dynamite`
+  - Nomi Malone (mom) - `calendar.nomi_malone`
+  - Snoop (kid) - `calendar.snoop`
+  - Scott Pilgrim (kid) - `calendar.scott_pilgrim`
+  - Cupid (kid) - `calendar.cupid`
 
-- **Purpose**: The source (or parent) calendars whose events will be used as the basis for synchronization.
-- List items:
-    - Each entry is a map containing:
-        - `entity_id`:
-            - **Type**: String
-            - **Description**: The unique identifier of a parent calendar (e.g., `calendar.napoleon_dynamite`).
+You'd add **five** Family Calendar Sync instances, one per destination calendar:
 
-#### `child`
-
-Type: List
-
-- **Purpose**: Define the target (or child) calendars where synchronized events should be copied.
-- List items:
-    - Each entry is a map with the following properties:
-        - `entity_id`:
-            - **Type**: String
-            - **Description**: The unique identifier of a child calendar (e.g., calendar.dad).
-        - `copy_all_from (optional)`:
-            - **Type**: List
-            - **Description**: Specifies the parent calendar(s) from which to copy all events from. Contains:
-                - `entity_id`:
-                    - **Type**: String
-                    - **Description**: The unique identifier of the parent calendar.
-        - `keywords (optional):`:
-            - **Type**: List of Strings
-            - **Description**: A list of keywords used as a case-insensitive search filter against the title's of `parent` events.
-
-### Example `configuration.yaml`
-
-Let's say we have the following family structure:
-  - Napoleon Dynamite (dad)
-  - Nomi Malone (mom)
-  - Snoop (child)
-  - Scott Pilgrim (child)
-  - Cupid (child)
-
-
-Here's the example `configuration.yaml`:
-
-```yaml
-family_calendar_sync:
-  options:
-    days_to_sync: 7
-    ignore_event_if_title_starts_with: '!'
-  parent:
-    - entity_id: calendar.napoleon_dynamite
-    - entity_id: calendar.nomi_malone
-  child:
-    # We also created a Local Calendar entity for mom and dad, because the
-    # kids like to see what mom and dad have going on in their day too.
-    - entity_id: calendar.dad
-      copy_all_from:
-        - calendar.napoleon_dynamite
-      keywords:
-        - dad
-        - napoleon
-        - family
-    - entity_id: calendar.mom
-      copy_all_from:
-        - calendar.nomi_malone
-      keywords:
-        - mom
-        - nomi
-        - family
-    - entity_id: calendar.snoop
-      keywords:
-        - snoop
-        - family
-        - kids
-        - kiddos
-    - entity_id: calendar.scott_pilgrim
-      keywords:
-        - scott
-        - family
-        - kids
-        - kiddos
-    - entity_id: calendar.cupid
-      keywords:
-        - cupid
-        - family
-        - kids
-        - kiddos
-```
+| Sync to | Sync from | Copy all from | Keywords |
+|---|---|---|---|
+| `calendar.dad` | napoleon_dynamite, nomi_malone | napoleon_dynamite | dad, napoleon, family |
+| `calendar.mom` | napoleon_dynamite, nomi_malone | nomi_malone | mom, nomi, family |
+| `calendar.snoop` | napoleon_dynamite, nomi_malone | *(none)* | snoop, family, kids, kiddos |
+| `calendar.scott_pilgrim` | napoleon_dynamite, nomi_malone | *(none)* | scott, family, kids, kiddos |
+| `calendar.cupid` | napoleon_dynamite, nomi_malone | *(none)* | cupid, family, kids, kiddos |
 
 Here is what the synced calendar looks like:
 
 ![screenshot](assets/screenshot.png)
 
-### Service
+### The `family_calendar_sync.sync` action
 
-The component creates a `family_calendar_sync` service. This is what you would use in an automation to have them stay in sync. In the automation, you can specify how frequently the sync occurs.
-
-#### Example Automation
-
-This can be setup using the visual editor, but here is the yaml for an automation that runs every 15 minutes:
+Since every sync already runs on its own schedule, you shouldn't need this for normal use - but it's there for automations that want to force an immediate sync (e.g. after a "I just added an event" trigger).
 
 ```yaml
-description: "Run family calendar sync"
-mode: single
-triggers:
-  - trigger: time_pattern
-    minutes: /15
-actions:
-  - action: family_calendar_sync.family_calendar_sync
-    metadata: {}
-    data: {}
+# Sync everything
+action: family_calendar_sync.sync
+
+# Sync just one destination calendar's config entry
+action: family_calendar_sync.sync
+data:
+  config_entry_id: 01ABCXYZ...   # find this on the sync's device page
 ```
+
+Or just press its **Sync now** button instead.
+
+## What changed in this fork
+
+This fork restructures the original YAML-only integration into a config-flow-based (UI) integration, and renames `parent`/`child` to `from`/`to` throughout:
+
+- **UI configuration** instead of `configuration.yaml` - one config entry per destination (`to`) calendar, added/edited from Settings -> Devices & Services
+- **`parent` -> `from`, `child` -> `to`** in every setting, entity, and internal class name
+- **Automatic scheduled syncing** with a configurable interval (previously required you to build your own automation calling the service on a timer)
+- **`sensor.*_last_sync`** and **`button.*_sync_now`** entities for visibility and manual control per sync
+- **Bug fix:** `copy_all_from` with no keywords previously never synced anything - a `set` was being compared to a `str` with `==` instead of checking membership with `in`. Fixed, and the config flow now refuses to save a sync that would never copy anything.
+- **Bug fix:** all-day events whose start/end dates arrived as ISO strings instead of `date` objects would crash with `TypeError` when the integration tried to extend a zero-length event
+- **Robustness:** one calendar backend rejecting a single event no longer aborts the rest of that sync run; failures are logged and counted instead
+- **Robustness:** `from`/`to` calendars are loaded concurrently instead of one at a time
+- **Test suite** using `pytest` + `pytest-homeassistant-custom-component` (see [Development](#development))
+
+**This is a breaking change** if you're upgrading from a YAML-based install: your `family_calendar_sync:` YAML block is no longer read (you'll see a repair notice pointing you to the UI), and you'll need to recreate your syncs through **Add Integration**.
+
+## Development
+
+```bash
+pip install -r requirements-test.txt
+pytest
+```
+
+Tests are split by concern:
+- `tests/test_calendar_sync.py` - the sync engine itself (hashing, keyword matching, date-handling edge cases, the `copy_all_from` regression, error isolation) against a lightweight fake `hass`
+- `tests/test_config_flow.py` - the config flow and options flow, using the real Home Assistant test harness
+- `tests/test_init.py` - entry setup/unload and the `family_calendar_sync.sync` action
 
 ## TODO
 
-- [ ] Create tests for everything
-- [ ] Add check if child calendar is CalDAV and raise error because Home Assistant cannot create events on CalDAV entity.
-- [ ] See if we can run sync on any event change within the time period being synced (default 7 days).
-- [ ] Test if keywords work with multiple word strings
-- [ ] Create option to allow keywords to be case-sensitive match
-- [ ] Add todo lists
-- [ ] Error handle if a CalDAV or Google Calendar (without two way permissions) entity is used as a `child`
-
-## Migration-copy_all_from
-
-For the `child` section, we are changing the optional argument `copy_all_from` to be a type List instead of type Map. 
-
-Prior:
-
-```
-  child:
-    - entity_id: calendar.dad
-      copy_all_from:
-        entity_id: calendar.napoleon_dynamite
-```
-
-After:
-
-```
-  child:
-    - entity_id: calendar.dad
-      copy_all_from:
-        - calendar.napoleon_dynamite
-```
-
+- [ ] Add check if `to` calendar is CalDAV and raise a clear error, since Home Assistant can't create events on a CalDAV entity
+- [ ] Run sync when a source event changes, not just on the interval
+- [ ] Case-sensitive keyword matching option
+- [ ] Support to-do lists in addition to calendars
+- [ ] Friendlier error surfaced in the UI if a `to` calendar can't accept created events (e.g. read-only CalDAV/Google without two-way sync)
