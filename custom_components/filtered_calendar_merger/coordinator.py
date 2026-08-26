@@ -1,4 +1,4 @@
-"""DataUpdateCoordinator for Calendar Sync."""
+"""DataUpdateCoordinator for Filtered Calendar Merger."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from .calendar_sync import sync_family_calendar
+from .filtered_calendar_merger import sync_filtered_calendar_merger
 from .const import (
     CONF_COPY_ALL_FROM,
     CONF_DAYS_TO_SYNC,
@@ -75,7 +75,7 @@ def build_sync_config(entry: ConfigEntry) -> dict:
     }
 
 
-class FamilyCalendarSyncCoordinator(DataUpdateCoordinator[SyncRunResult]):
+class FilteredCalendarMergerCoordinator(DataUpdateCoordinator[SyncRunResult]):
     """Coordinator that runs the sync on an interval and on manual request."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
@@ -87,17 +87,20 @@ class FamilyCalendarSyncCoordinator(DataUpdateCoordinator[SyncRunResult]):
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=entry,
             name=f"{DOMAIN}_{entry.data[CONF_TO_ENTITY_ID]}",
-            update_interval=timedelta(minutes=interval_minutes),
+            update_interval=(
+                timedelta(minutes=interval_minutes) if interval_minutes else None
+            ),
         )
 
     async def _async_update_data(self) -> SyncRunResult:
         """Run one sync pass. Raised errors surface as `unavailable` sensors."""
         config = build_sync_config(self.entry)
         try:
-            result = await sync_family_calendar(hass=self.hass, config=config)
+            result = await sync_filtered_calendar_merger(hass=self.hass, config=config)
         except Exception as err:  # noqa: BLE001 - surface any failure via the coordinator
-            raise UpdateFailed(f"Family calendar sync failed: {err}") from err
+            raise UpdateFailed(f"Filtered Calendar Merger sync failed: {err}") from err
 
         return SyncRunResult(
             events_added=result["events_added"],

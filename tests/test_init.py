@@ -1,4 +1,4 @@
-"""Tests for integration setup/unload and the `calendar_sync.sync` service."""
+"""Tests for integration setup/unload and the `filtered_calendar_merger.sync` service."""
 
 from unittest.mock import AsyncMock, patch
 
@@ -6,7 +6,7 @@ import pytest
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.calendar_sync.const import (
+from custom_components.filtered_calendar_merger.const import (
     CONF_COPY_ALL_FROM,
     CONF_FROM_ENTITIES,
     CONF_KEYWORDS,
@@ -18,16 +18,22 @@ from custom_components.calendar_sync.const import (
 SYNC_RESULT = {"events_added": 1, "events_removed": 0, "errors": 0}
 
 
-def _make_entry(to_entity: str = "calendar.kids") -> MockConfigEntry:
+def _make_entry(
+    to_entity: str = "calendar.kids", sync_interval_minutes: int | None = None
+) -> MockConfigEntry:
+    options = {
+        CONF_FROM_ENTITIES: ["calendar.parent1"],
+        CONF_COPY_ALL_FROM: ["calendar.parent1"],
+        CONF_KEYWORDS: [],
+    }
+    if sync_interval_minutes is not None:
+        options["sync_interval_minutes"] = sync_interval_minutes
+
     return MockConfigEntry(
         domain=DOMAIN,
         unique_id=to_entity,
         data={CONF_TO_ENTITY_ID: to_entity},
-        options={
-            CONF_FROM_ENTITIES: ["calendar.parent1"],
-            CONF_COPY_ALL_FROM: ["calendar.parent1"],
-            CONF_KEYWORDS: [],
-        },
+        options=options,
     )
 
 
@@ -37,7 +43,7 @@ async def test_setup_entry_creates_coordinator_and_registers_service(hass):
     entry.add_to_hass(hass)
 
     with patch(
-        "custom_components.calendar_sync.coordinator.sync_family_calendar",
+        "custom_components.filtered_calendar_merger.coordinator.sync_filtered_calendar_merger",
         AsyncMock(return_value=SYNC_RESULT),
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
@@ -53,7 +59,7 @@ async def test_unload_entry_cleans_up_and_removes_service_when_last(hass):
     entry.add_to_hass(hass)
 
     with patch(
-        "custom_components.calendar_sync.coordinator.sync_family_calendar",
+        "custom_components.filtered_calendar_merger.coordinator.sync_filtered_calendar_merger",
         AsyncMock(return_value=SYNC_RESULT),
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
@@ -67,6 +73,29 @@ async def test_unload_entry_cleans_up_and_removes_service_when_last(hass):
 
 
 @pytest.mark.asyncio
+async def test_zero_sync_interval_requires_a_manual_sync(hass):
+    entry = _make_entry(sync_interval_minutes=0)
+    entry.add_to_hass(hass)
+
+    sync_mock = AsyncMock(return_value=SYNC_RESULT)
+    with patch(
+        "custom_components.filtered_calendar_merger.coordinator.sync_filtered_calendar_merger",
+        sync_mock,
+    ):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+        coordinator = hass.data[DOMAIN][entry.entry_id]
+        assert coordinator.update_interval is None
+        sync_mock.assert_not_awaited()
+
+        await hass.services.async_call(DOMAIN, SERVICE_SYNC, {}, blocking=True)
+        await hass.async_block_till_done()
+
+    sync_mock.assert_awaited_once()
+
+
+@pytest.mark.asyncio
 async def test_sync_service_triggers_refresh_for_all_entries_by_default(hass):
     entry_a = _make_entry("calendar.kids_a")
     entry_b = _make_entry("calendar.kids_b")
@@ -75,7 +104,7 @@ async def test_sync_service_triggers_refresh_for_all_entries_by_default(hass):
 
     sync_mock = AsyncMock(return_value=SYNC_RESULT)
     with patch(
-        "custom_components.calendar_sync.coordinator.sync_family_calendar",
+        "custom_components.filtered_calendar_merger.coordinator.sync_filtered_calendar_merger",
         sync_mock,
     ):
         # Setting up the first entry for a domain also bootstraps every
@@ -100,7 +129,7 @@ async def test_sync_service_targets_a_single_entry(hass):
 
     sync_mock = AsyncMock(return_value=SYNC_RESULT)
     with patch(
-        "custom_components.calendar_sync.coordinator.sync_family_calendar",
+        "custom_components.filtered_calendar_merger.coordinator.sync_filtered_calendar_merger",
         sync_mock,
     ):
         assert await hass.config_entries.async_setup(entry_a.entry_id)

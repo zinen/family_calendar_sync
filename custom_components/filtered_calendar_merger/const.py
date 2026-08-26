@@ -1,8 +1,8 @@
-"""Constants for Calendar Sync component."""
+"""Constants for Filtered Calendar Merger component."""
 
 from homeassistant.const import Platform
 
-DOMAIN = "calendar_sync"
+DOMAIN = "filtered_calendar_merger"
 SERVICE_SYNC = "sync"
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.BUTTON]
@@ -24,6 +24,6 @@ CONF_SYNC_INTERVAL_MINUTES = "sync_interval_minutes"
 DEFAULT_DAYS_TO_SYNC = 7
 DEFAULT_DAYS_TO_SYNC_PAST = 0
 DEFAULT_SYNC_INTERVAL_MINUTES = 12 * 60
-MIN_SYNC_INTERVAL_MINUTES = 5
+MIN_SYNC_INTERVAL_MINUTES = 0
 
 HASH_LENGTH = 8

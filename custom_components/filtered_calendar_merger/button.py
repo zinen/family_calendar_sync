@@ -1,4 +1,4 @@
-"""Button platform for Calendar Sync - manual 'Sync now' trigger."""
+"""Button platform for Filtered Calendar Merger - manual 'Sync now' trigger."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_TO_ENTITY_ID, DOMAIN
-from .coordinator import FamilyCalendarSyncCoordinator
+from .coordinator import FilteredCalendarMergerCoordinator
 
 
 async def async_setup_entry(
@@ -18,19 +18,19 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the Calendar Sync 'Sync now' button for this entry."""
-    coordinator: FamilyCalendarSyncCoordinator = hass.data[DOMAIN][entry.entry_id]
+    """Set up the Filtered Calendar Merger 'Sync now' button for this entry."""
+    coordinator: FilteredCalendarMergerCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities([SyncNowButton(coordinator, entry)])
 
 
-class SyncNowButton(CoordinatorEntity[FamilyCalendarSyncCoordinator], ButtonEntity):
+class SyncNowButton(CoordinatorEntity[FilteredCalendarMergerCoordinator], ButtonEntity):
     """A button that triggers an immediate sync for this entry."""
 
     _attr_has_entity_name = True
     _attr_translation_key = "sync_now"
 
     def __init__(
-        self, coordinator: FamilyCalendarSyncCoordinator, entry: ConfigEntry
+        self, coordinator: FilteredCalendarMergerCoordinator, entry: ConfigEntry
     ) -> None:
         """Initialize the button."""
         super().__init__(coordinator)

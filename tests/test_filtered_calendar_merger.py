@@ -1,8 +1,8 @@
-"""Unit tests for the core sync engine in calendar_sync.py.
+"""Unit tests for the core sync engine in filtered_calendar_merger.py.
 
 These tests build a lightweight fake `hass` (see conftest.py) rather than
 the full pytest-homeassistant-custom-component `hass` fixture, since
-calendar_sync.py only touches hass.data['calendar'] and
+filtered_calendar_merger.py only touches hass.data['calendar'] and
 hass.services.async_call. This keeps the tests fast and focused on our own
 logic.
 """
@@ -14,13 +14,13 @@ import pytest
 
 from homeassistant.util import dt as dt_util
 
-from custom_components.calendar_sync.calendar_sync import (
+from custom_components.filtered_calendar_merger.filtered_calendar_merger import (
     FromEvent,
     SyncDateRange,
     SyncWorker,
     ToCalendar,
     ToEvent,
-    sync_family_calendar,
+    sync_filtered_calendar_merger,
 )
 
 from .conftest import FakeCalendarEntity, all_day_event, make_fake_hass, timed_event
@@ -90,7 +90,7 @@ def test_from_event_hash_roundtrips_through_to_event():
 
 
 def test_to_event_hash_must_be_at_the_end_of_the_description():
-    """Only the marker Calendar Sync appends is treated as an ownership hash."""
+    """Only the marker Filtered Calendar Merger appends is treated as an ownership hash."""
     assert (
         ToEvent({"description": "Reference [deadbeef] - do not remove"}).hashed_value
         is None
@@ -254,7 +254,7 @@ async def test_copy_all_from_syncs_even_with_no_keywords():
         "options": _base_options(),
     }
 
-    result = await sync_family_calendar(fake_hass, config)
+    result = await sync_filtered_calendar_merger(fake_hass, config)
 
     assert result["events_added"] == 2
     assert result["errors"] == 0
@@ -280,7 +280,7 @@ async def test_no_keywords_and_no_copy_all_from_syncs_nothing():
         "options": _base_options(),
     }
 
-    result = await sync_family_calendar(fake_hass, config)
+    result = await sync_filtered_calendar_merger(fake_hass, config)
 
     assert result["events_added"] == 0
     fake_hass.services.async_call.assert_not_called()
@@ -303,7 +303,7 @@ async def test_keyword_match_only_copies_matching_events():
         "options": _base_options(),
     }
 
-    result = await sync_family_calendar(fake_hass, config)
+    result = await sync_filtered_calendar_merger(fake_hass, config)
 
     assert result["events_added"] == 1
 
@@ -346,7 +346,7 @@ async def test_stale_to_event_is_removed_when_source_event_is_gone():
         "options": _base_options(),
     }
 
-    result = await sync_family_calendar(fake_hass, config)
+    result = await sync_filtered_calendar_merger(fake_hass, config)
 
     assert result["events_removed"] == 1
     to_entity.async_delete_event.assert_awaited_once_with("to-uid-1")
@@ -372,7 +372,7 @@ async def test_stale_to_event_is_removed_when_it_no_longer_matches_filter():
     )
     fake_hass = make_fake_hass([from_entity, to_entity])
 
-    result = await sync_family_calendar(
+    result = await sync_filtered_calendar_merger(
         fake_hass,
         {
             "from": [{"entity_id": "calendar.parent1"}],

@@ -1,1 +1,1 @@
-"""Tests for the Family Calendar Sync integration."""
+"""Tests for the Filtered Calendar Merger integration."""

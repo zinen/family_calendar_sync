@@ -1,4 +1,4 @@
-"""Tests for the Family Calendar Sync config flow and options flow."""
+"""Tests for the Filtered Calendar Merger config flow and options flow."""
 
 import pytest
 
@@ -7,7 +7,7 @@ from homeassistant.data_entry_flow import FlowResultType
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.calendar_sync.const import (
+from custom_components.filtered_calendar_merger.const import (
     CONF_COPY_ALL_FROM,
     CONF_FROM_ENTITIES,
     CONF_KEYWORDS,

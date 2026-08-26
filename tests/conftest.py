@@ -1,9 +1,21 @@
-"""Shared fixtures for Family Calendar Sync tests."""
+"""Shared fixtures for Filtered Calendar Merger tests."""
 
 from datetime import date, datetime, timedelta
+import sys
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+
+if sys.platform == "win32":
+    import pytest_socket
+
+    # Windows' asyncio event loop needs an IPv4 socket pair. Keep the test
+    # plugin's localhost-only connection guard, but do not replace
+    # ``socket.socket`` itself as it does on Unix.
+    def _allow_socket_creation(**_kwargs: object) -> None:
+        """Leave socket creation available for the Windows event loop."""
+
+    pytest_socket.disable_socket = _allow_socket_creation
 
 from homeassistant.components.calendar import CalendarEvent
 from homeassistant.util import dt as dt_util
@@ -43,10 +55,10 @@ class FakeCalendarComponent:
 
 
 def make_fake_hass(entities: list[FakeCalendarEntity]) -> MagicMock:
-    """Build a minimal fake `hass` object sufficient for calendar_sync.py.
+    """Build a minimal fake `hass` object sufficient for filtered_calendar_merger.py.
 
     This intentionally does NOT use the real pytest-homeassistant-custom-component
-    `hass` fixture: calendar_sync.py only touches `hass.data['calendar']` and
+    `hass` fixture: filtered_calendar_merger.py only touches `hass.data['calendar']` and
     `hass.services.async_call`, so a lightweight fake keeps these tests fast
     and focused on our own logic rather than HA's core setup.
     """

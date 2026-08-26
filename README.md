@@ -1,6 +1,8 @@
-# calendar_sync
+# filtered_calendar_merger
 
-Calendar Sync is a custom component for Home Assistant that syncs events **from** one or more source calendars **to** one or more destination calendars, and keeps them in sync on a schedule you control.
+Filtered Calendar Merger is a custom component for Home Assistant that syncs events **from** one or more source calendars **to** one or more destination calendars, and keeps them in sync on a schedule you control.
+
+![image info](./custom_components/filtered_calendar_merger/brand/icon.png)
 
 For each destination calendar, you choose source calendars to copy in full and/or source calendars to filter by title. It keeps things in sync by hashing each source event and storing the first 8 characters of that hash at the end of the copied event's description, so it can tell what it created, what changed, and what should be removed.
 
@@ -31,7 +33,7 @@ When my partner or I create events for the kids, we put their name in the event.
 - **Configured entirely through the UI** - Settings -> Devices & Services -> Add Integration
 - Copies events from one or more `from` calendars into a `to` calendar and keeps them in sync automatically on a schedule you set (in minutes)
 - A **"Sync now" button** and a **"Last sync" sensor** (with events-added / events-removed / error counts) are created for every sync you configure
-- A `calendar_sync.sync` action is still available for automations, and can target one sync or all of them
+- A `filtered_calendar_merger.sync` action is still available for automations, and can target one sync or all of them
 - If an event is added directly to a `to` calendar, it will not be touched by this integration
 - Specify how many days into the future (and past) to sync
 - Ignore source events whose title starts with a character you choose
@@ -47,16 +49,16 @@ This component is installed via [HACS](https://hacs.xyz).
 1. Install HACS first
 1. Go to **HACS** > **⁝** > **Custom repositories**
 1. Add this repository and choose **Integration**, then click **ADD**
-1. Go back to the main HACS landing page and search `calendar sync`
+1. Go back to the main HACS landing page and search `Filtered Calendar Merger`
 1. Click on it, then click **Download**
 1. Restart Home Assistant
 
 ## Configuration
 
-Calendar Sync is configured entirely through the UI; YAML configuration is not supported.
+Filtered Calendar Merger is configured entirely through the UI; YAML configuration is not supported.
 
 1. Go to **Settings -> Devices & Services -> Add Integration**
-1. Search for **Calendar Sync**
+1. Search for **Filtered Calendar Merger**
 1. For each destination calendar you want to sync events into, add a new instance:
    - **Sync to calendar** - the destination calendar (e.g. `calendar.snoop`)
    - **Sync every event from these calendar(s)** *(optional)* - sources whose events are all copied
@@ -64,7 +66,7 @@ Calendar Sync is configured entirely through the UI; YAML configuration is not s
    - **Match these words or phrases in the event title** - required when using filtered sources; e.g. a name, "family", or "with kids"
    - **Do not sync events whose title starts with** *(optional)* - e.g. `!` for private events the kids don't need to see
    - **Days ahead / Days in the past to sync** - the component uses complete calendar days. The default of 7 days ahead and 0 days in the past copies all of today plus the next seven days; it includes an event that finished earlier today. Increase the past value to include complete earlier dates.
-   - **Sync every (minutes)** - how often this sync runs automatically; the default is 720 minutes (12 hours)
+   - **Sync every (minutes)** - how often this sync runs automatically; the default is 720 minutes (12 hours). Enter `0` to disable automatic and startup syncs, then run it with the **Sync now** button or the `filtered_calendar_merger.sync` automation action.
 1. Repeat for each destination calendar
 
 > Select at least one source calendar. A source calendar may be in either full sync or filtered sync, but not both.
@@ -77,9 +79,9 @@ The optional ignore prefix is checked against the title first, before full or fi
 
 ### Synced-event marker
 
-Calendar Sync appends an eight-character marker such as `[a1b2c3d4]` to the **end** of every description it creates. This marker identifies an event as integration-managed and lets Calendar Sync avoid duplicates and remove stale copies. A bracketed value elsewhere in a description is ignored.
+Filtered Calendar Merger appends an eight-character marker such as `[a1b2c3d4]` to the **end** of every description it creates. This marker identifies an event as integration-managed and lets Filtered Calendar Merger avoid duplicates and remove stale copies. A bracketed value elsewhere in a description is ignored.
 
-If you edit a copied event manually, keep the marker at the end if you want Calendar Sync to continue managing it. Adding text after the marker makes it a normal, unmanaged destination event.
+If you edit a copied event manually, keep the marker at the end if you want Filtered Calendar Merger to continue managing it. Adding text after the marker makes it a normal, unmanaged destination event.
 
 ### Common setups
 
@@ -104,7 +106,7 @@ Family structure:
   - Scott Pilgrim (kid) - `calendar.scott_pilgrim`
   - Cupid (kid) - `calendar.cupid`
 
-You'd add **five** Calendar Sync instances, one per destination calendar:
+You'd add **five** Filtered Calendar Merger instances, one per destination calendar:
 
 | Sync to | Sync every event from | Sync matching events from | Title keywords |
 |---|---|---|---|
@@ -118,16 +120,16 @@ Here is what the synced calendar looks like:
 
 ![screenshot](assets/screenshot.png)
 
-### The `calendar_sync.sync` action
+### The `filtered_calendar_merger.sync` action
 
 Since every sync already runs on its own schedule, you shouldn't need this for normal use - but it's there for automations that want to force an immediate sync (e.g. after a "I just added an event" trigger).
 
 ```yaml
 # Sync everything
-action: calendar_sync.sync
+action: filtered_calendar_merger.sync
 
 # Sync just one destination calendar's config entry
-action: calendar_sync.sync
+action: filtered_calendar_merger.sync
 data:
   config_entry_id: 01ABCXYZ...   # find this on the sync's device page
 ```
@@ -142,9 +144,9 @@ pytest
 ```
 
 Tests are split by concern:
-- `tests/test_calendar_sync.py` - the sync engine itself (hashing, keyword matching, date-handling edge cases, the `copy_all_from` regression, error isolation) against a lightweight fake `hass`
+- `tests/test_filtered_calendar_merger.py` - the sync engine itself (hashing, keyword matching, date-handling edge cases, the `copy_all_from` regression, error isolation) against a lightweight fake `hass`
 - `tests/test_config_flow.py` - the config flow and options flow, using the real Home Assistant test harness
-- `tests/test_init.py` - entry setup/unload and the `calendar_sync.sync` action
+- `tests/test_init.py` - entry setup/unload and the `filtered_calendar_merger.sync` action
 
 ## TODO
 

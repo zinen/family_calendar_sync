@@ -1,4 +1,4 @@
-"""Config flow for Calendar Sync."""
+"""Config flow for Filtered Calendar Merger."""
 
 from __future__ import annotations
 
@@ -158,8 +158,8 @@ def _options_from_user_input(user_input: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-class FamilyCalendarSyncConfigFlow(ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for Calendar Sync (one entry per `to` calendar)."""
+class FilteredCalendarMergerConfigFlow(ConfigFlow, domain=DOMAIN):
+    """Handle a config flow for Filtered Calendar Merger (one entry per `to` calendar)."""
 
     VERSION = 1
 
@@ -192,10 +192,10 @@ class FamilyCalendarSyncConfigFlow(ConfigFlow, domain=DOMAIN):
     @staticmethod
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
         """Get the options flow for this handler."""
-        return FamilyCalendarSyncOptionsFlow()
+        return FilteredCalendarMergerOptionsFlow()
 
 
-class FamilyCalendarSyncOptionsFlow(OptionsFlow):
+class FilteredCalendarMergerOptionsFlow(OptionsFlow):
     """Handle options (edit from-entities/keywords/schedule) for an existing entry."""
 
     async def async_step_init(

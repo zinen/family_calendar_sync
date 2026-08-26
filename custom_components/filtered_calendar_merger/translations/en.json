@@ -2,7 +2,7 @@
     "config": {
         "step": {
             "user": {
-                "title": "Add a Calendar Sync",
+                "title": "Add Filtered Calendar Merger",
                 "description": "Choose a destination, then choose source calendars to sync in full and/or source calendars to filter by title.",
                 "data": {
                     "to_entity_id": "Sync to calendar",
@@ -19,9 +19,9 @@
                     "from_entities": "Only events whose title matches a word or phrase below are copied from these calendars. Except those excluded by the optional do not sync rule.",
                     "keywords": "Required when using filtered sync. Matching is case-insensitive and uses whole words/phrases in the event title only; descriptions are not searched.",
                     "ignore_event_if_title_starts_with": "Applied before all other rules, to every source calendar. This prefix check is case-sensitive. For example, use ! to exclude !Private event.",
-                    "days_to_sync": "Copy the whole current day plus this many full calendar days ahead.",
-                    "days_to_sync_past": "Add this many complete calendar days before today. A value of 0 still includes all events from today.",
-                    "sync_interval_minutes": "How often the automatic sync runs. The default is 720 minutes (12 hours)."
+                    "days_to_sync": "Copy the whole current day plus this many full calendar days ahead. Default=7.",
+                    "days_to_sync_past": "Add this many complete calendar days before today. A value of 0 still includes all events from today. Default=0.",
+                    "sync_interval_minutes": "How often the automatic sync runs. The default is 720 minutes (12 hours). Enter 0 to disable automatic sync; then trigger it with an automation or the Sync now button."
                 }
             }
         },
@@ -32,13 +32,13 @@
             "keywords_required_for_matching_calendars": "Add at least one title keyword or phrase for the filtered source calendars."
         },
         "abort": {
-            "already_configured": "This calendar already has a Calendar Sync configured."
+            "already_configured": "This calendar already has a Filtered Calendar Merger configured."
         }
     },
     "options": {
         "step": {
             "init": {
-                "title": "Calendar Sync settings",
+                "title": "Filtered Calendar Merger settings",
                 "description": "Editing sync settings for {to_entity_id}. Choose full-sync and filtered sources separately.",
                 "data": {
                     "copy_all_from": "Sync every event from these calendar(s)",
@@ -54,9 +54,9 @@
                     "from_entities": "Only events whose title matches a word or phrase below are copied from these calendars. Except those excluded by the optional do not sync rule.",
                     "keywords": "Required when using filtered sync. Matching is case-insensitive and uses whole words/phrases in the event title only; descriptions are not searched.",
                     "ignore_event_if_title_starts_with": "Applied before all other rules, to every source calendar. This prefix check is case-sensitive.",
-                    "days_to_sync": "Copy the whole current day plus this many full calendar days ahead.",
-                    "days_to_sync_past": "Add this many complete calendar days before today. A value of 0 still includes all events from today.",
-                    "sync_interval_minutes": "How often the automatic sync runs. The default is 720 minutes (12 hours)."
+                    "days_to_sync": "Copy the whole current day plus this many full calendar days ahead. Default=7.",
+                    "days_to_sync_past": "Add this many complete calendar days before today. A value of 0 still includes all events from today. Default=0.",
+                    "sync_interval_minutes": "How often the automatic sync runs. The default is 720 minutes (12 hours). Enter 0 to disable automatic sync; then trigger it with an automation or the Sync now button."
                 }
             }
         },
@@ -81,14 +81,14 @@
     },
     "issues": {
         "yaml_no_longer_supported": {
-            "title": "Calendar Sync does not support YAML configuration",
-            "description": "Calendar Sync is configured entirely through the UI.\n\nGo to **Settings -> Devices & Services -> Add Integration -> Calendar Sync**."
+            "title": "Filtered Calendar Merger does not support YAML configuration",
+            "description": "Filtered Calendar Merger is configured entirely through the UI.\n\nGo to **Settings -> Devices & Services -> Add Integration -> Filtered Calendar Merger**."
         }
     },
     "services": {
         "sync": {
             "name": "Sync now",
-            "description": "Triggers an immediate sync for one Calendar Sync entry, or all of them if none is specified.",
+            "description": "Triggers an immediate sync for one Filtered Calendar Merger entry, or all of them if none is specified.",
             "fields": {
                 "config_entry_id": {
                     "name": "Config entry ID",

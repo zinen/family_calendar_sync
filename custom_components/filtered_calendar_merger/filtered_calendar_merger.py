@@ -13,7 +13,7 @@ from homeassistant.util import dt as dt_util
 
 from .const import DEFAULT_DAYS_TO_SYNC, DEFAULT_DAYS_TO_SYNC_PAST, HASH_LENGTH
 
-# Calendar Sync always appends this marker. Anchoring it avoids treating a
+# Filtered Calendar Merger always appends this marker. Anchoring it avoids treating a
 # bracketed value in a user's normal description as an integration marker.
 HASH_REGEX = re.compile(r"\[([a-z0-9]{8})\]\s*\Z", re.IGNORECASE)
 
@@ -645,7 +645,7 @@ class SyncWorker:
         return self.stats
 
 
-async def sync_family_calendar(hass: HomeAssistant, config: dict) -> dict:
+async def sync_filtered_calendar_merger(hass: HomeAssistant, config: dict) -> dict:
     """Sync `from` calendar events into `to` calendars based on criteria.
 
     Returns a stats dict: {"events_added", "events_removed", "errors"}.

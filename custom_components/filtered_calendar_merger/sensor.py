@@ -1,4 +1,4 @@
-"""Sensor platform for Calendar Sync - shows the status of the last sync."""
+"""Sensor platform for Filtered Calendar Merger - shows the status of the last sync."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_TO_ENTITY_ID, DOMAIN
-from .coordinator import FamilyCalendarSyncCoordinator, SyncRunResult
+from .coordinator import FilteredCalendarMergerCoordinator, SyncRunResult
 
 
 async def async_setup_entry(
@@ -18,12 +18,12 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the Calendar Sync sensor for this entry."""
-    coordinator: FamilyCalendarSyncCoordinator = hass.data[DOMAIN][entry.entry_id]
+    """Set up the Filtered Calendar Merger sensor for this entry."""
+    coordinator: FilteredCalendarMergerCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities([LastSyncSensor(coordinator, entry)])
 
 
-class LastSyncSensor(CoordinatorEntity[FamilyCalendarSyncCoordinator], SensorEntity):
+class LastSyncSensor(CoordinatorEntity[FilteredCalendarMergerCoordinator], SensorEntity):
     """Reports the timestamp of the most recent sync, with counts as attributes."""
 
     _attr_has_entity_name = True
@@ -32,7 +32,7 @@ class LastSyncSensor(CoordinatorEntity[FamilyCalendarSyncCoordinator], SensorEnt
     _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     def __init__(
-        self, coordinator: FamilyCalendarSyncCoordinator, entry: ConfigEntry
+        self, coordinator: FilteredCalendarMergerCoordinator, entry: ConfigEntry
     ) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator)

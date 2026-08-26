@@ -1,9 +1,9 @@
 {
-    "domain": "calendar_sync",
-    "name": "Calendar Sync",
+    "domain": "filtered_calendar_merger",
+    "name": "Filtered Calendar Merger",
     "version": "1.0.0",
-    "documentation": "https://github.com/zinen/family_calendar_sync",
-    "issue_tracker": "https://github.com/zinen/family_calendar_sync/issues",
+    "documentation": "https://github.com/zinen/filtered_calendar_merger",
+    "issue_tracker": "https://github.com/zinen/filtered_calendar_merger/issues",
     "dependencies": ["calendar"],
     "after_dependencies": ["caldav", "google", "ical", "local_calendar"],
     "requirements": [],

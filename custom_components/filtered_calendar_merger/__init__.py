@@ -1,4 +1,4 @@
-"""The Calendar Sync integration."""
+"""The Filtered Calendar Merger integration."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import issue_registry as ir
 
 from .const import DOMAIN, PLATFORMS, SERVICE_SYNC
-from .coordinator import FamilyCalendarSyncCoordinator
+from .coordinator import FilteredCalendarMergerCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -44,9 +44,10 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Calendar Sync from a config entry."""
-    coordinator = FamilyCalendarSyncCoordinator(hass, entry)
-    await coordinator.async_config_entry_first_refresh()
+    """Set up Filtered Calendar Merger from a config entry."""
+    coordinator = FilteredCalendarMergerCoordinator(hass, entry)
+    if coordinator.update_interval is not None:
+        await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
 
@@ -74,14 +75,14 @@ async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> Non
 
 
 def _async_register_service(hass: HomeAssistant) -> None:
-    """Register the `calendar_sync.sync` action, once."""
+    """Register the `filtered_calendar_merger.sync` action, once."""
     if hass.services.has_service(DOMAIN, SERVICE_SYNC):
         return
 
     async def handle_sync(call: ServiceCall) -> None:
         """Trigger an immediate sync for one entry, or all entries if none given."""
         target_entry_id = call.data.get("config_entry_id")
-        coordinators: list[FamilyCalendarSyncCoordinator] = list(
+        coordinators: list[FilteredCalendarMergerCoordinator] = list(
             hass.data.get(DOMAIN, {}).values()
         )
 
@@ -89,7 +90,7 @@ def _async_register_service(hass: HomeAssistant) -> None:
             coordinator = hass.data.get(DOMAIN, {}).get(target_entry_id)
             if coordinator is None:
                 raise ValueError(
-                    f"No Calendar Sync config entry with id {target_entry_id}"
+                    f"No Filtered Calendar Merger config entry with id {target_entry_id}"
                 )
             coordinators = [coordinator]
 
