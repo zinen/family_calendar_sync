@@ -2,7 +2,7 @@
     "domain": "filtered_calendar_merger",
     "name": "Filtered Calendar Merger",
     "after_dependencies": ["caldav", "google", "ical", "local_calendar"],
-    "codeowners": ["@mccroden"],
+    "codeowners": ["@mccroden","@zinen"],
     "config_flow": true,
     "dependencies": ["calendar"],
     "documentation": "https://github.com/zinen/filtered_calendar_merger",
