@@ -1,6 +1,6 @@
 # filtered_calendar_merger
 
-Filtered Calendar Merger is a custom component for Home Assistant that syncs events **from** one or more source calendars **to** one or more destination calendars, and keeps them in sync on a schedule you control.
+Filtered Calendar Merger is a custom component for Home Assistant that  one-way syncs events **from** one or more source calendars **to** a destination calendar, and keeps them in sync on a schedule you control.
 
 ![image info](./custom_components/filtered_calendar_merger/brand/icon.png)
 
@@ -25,7 +25,7 @@ I saw the Skylight calendar and thought it looked cool. But I didn't like that I
 
 I have an iCloud calendar and I share it with my partner. My partner also has an iCloud calendar and shares it with me. This is useful because if my partner adds an event titled "Dentist," I know it's for them. This came in handy when designing this component too, because I can just say "copy all of the events from my shared calendar to my local calendar named dad" (see `Copy all events from` below).
 
-When my partner or I create events for the kids, we put their name in the event. This component looks for keywords (e.g. their name) and copies those events to their calendars.
+When my partner or I create events for the kids, we put their name in the event. This component looks for keywords (e.g. their name) in the parent calender and copies those events to their calendars.
 
 ## Features
 
@@ -155,3 +155,12 @@ Tests are split by concern:
 - [ ] Case-sensitive keyword matching option
 - [ ] Support to-do lists in addition to calendars
 - [ ] Friendlier error surfaced in the UI if a `to` calendar can't accept created events (e.g. read-only CalDAV/Google without two-way sync)
+
+### User stories and use cases covered by this integration
+
+#1: A user want to sync a whole calender with another calender. Like a clone
+
+#2: A user want to sync two separate calenders into one third calender. Like if different services publish a calendar and want to merge the info
+
+#3 A user want sync all event from one calender that matches keyword "with kids" to another calender, unless the title of the event starts with eg. "!"
+
