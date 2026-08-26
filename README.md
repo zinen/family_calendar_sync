@@ -48,7 +48,7 @@ This component is installed via [HACS](https://hacs.xyz).
 
 1. Install HACS first
 1. Go to **HACS** > **⁝** > **Custom repositories**
-1. Add this repository and choose **Integration**, then click **ADD**
+1. Add this repository github URL and choose **Integration**, then click **ADD**
 1. Go back to the main HACS landing page and search `Filtered Calendar Merger`
 1. Click on it, then click **Download**
 1. Restart Home Assistant

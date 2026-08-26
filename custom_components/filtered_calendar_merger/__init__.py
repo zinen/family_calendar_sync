@@ -9,7 +9,6 @@ import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers import issue_registry as ir
 
 from .const import DOMAIN, PLATFORMS, SERVICE_SYNC
 from .coordinator import FilteredCalendarMergerCoordinator
@@ -22,25 +21,7 @@ SERVICE_SYNC_SCHEMA = vol.Schema(
     }
 )
 
-
-async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    """Set up the integration from YAML, if present.
-
-    YAML configuration is no longer supported - everything is configured
-    through the UI (Settings -> Devices & Services -> Add Integration).
-    If legacy YAML config is found, raise a repair issue pointing the user
-    at the UI instead of silently ignoring their configuration.
-    """
-    if DOMAIN in config:
-        ir.async_create_issue(
-            hass,
-            DOMAIN,
-            "yaml_no_longer_supported",
-            is_fixable=False,
-            severity=ir.IssueSeverity.WARNING,
-            translation_key="yaml_no_longer_supported",
-        )
-    return True
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

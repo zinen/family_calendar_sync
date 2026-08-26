@@ -79,12 +79,6 @@
             }
         }
     },
-    "issues": {
-        "yaml_no_longer_supported": {
-            "title": "Filtered Calendar Merger does not support YAML configuration",
-            "description": "Filtered Calendar Merger is configured entirely through the UI.\n\nGo to **Settings -> Devices & Services -> Add Integration -> Filtered Calendar Merger**."
-        }
-    },
     "services": {
         "sync": {
             "name": "Sync now",
