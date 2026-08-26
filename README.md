@@ -1,5 +1,7 @@
 # filtered_calendar_merger
 
+This is a fork of [McCroden/family_calendar_sync](https://github.com/McCroden/family_calendar_sync) with UI config and more error handling. 
+
 Filtered Calendar Merger is a custom component for Home Assistant that  one-way syncs events **from** one or more source calendars **to** a destination calendar, and keeps them in sync on a schedule you control.
 
 ![image info](./custom_components/filtered_calendar_merger/brand/icon.png)
