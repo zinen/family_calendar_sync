@@ -1,13 +1,13 @@
 {
     "domain": "filtered_calendar_merger",
     "name": "Filtered Calendar Merger",
-    "version": "1.0.0",
-    "documentation": "https://github.com/zinen/filtered_calendar_merger",
-    "issue_tracker": "https://github.com/zinen/filtered_calendar_merger/issues",
-    "dependencies": ["calendar"],
     "after_dependencies": ["caldav", "google", "ical", "local_calendar"],
-    "requirements": [],
     "codeowners": ["@mccroden"],
     "config_flow": true,
-    "iot_class": "local_polling"
+    "dependencies": ["calendar"],
+    "documentation": "https://github.com/zinen/filtered_calendar_merger",
+    "iot_class": "local_polling",
+    "issue_tracker": "https://github.com/zinen/filtered_calendar_merger/issues",
+    "requirements": [],
+    "version": "1.0.0"
 }
