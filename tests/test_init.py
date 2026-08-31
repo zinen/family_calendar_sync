@@ -1,10 +1,15 @@
 """Tests for integration setup/unload and the `filtered_calendar_merger.sync` service."""
 
+from datetime import timedelta
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from pytest_homeassistant_custom_component.common import MockConfigEntry
+from homeassistant.util import dt as dt_util
+from pytest_homeassistant_custom_component.common import (
+    MockConfigEntry,
+    async_fire_time_changed,
+)
 
 from custom_components.filtered_calendar_merger.const import (
     CONF_COPY_ALL_FROM,
@@ -93,6 +98,31 @@ async def test_zero_sync_interval_requires_a_manual_sync(hass):
         await hass.async_block_till_done()
 
     sync_mock.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_nonzero_sync_interval_runs_without_entity_listeners(hass):
+    entry = _make_entry(sync_interval_minutes=1)
+    entry.add_to_hass(hass)
+
+    sync_mock = AsyncMock(return_value=SYNC_RESULT)
+    with (
+        patch(
+            "custom_components.filtered_calendar_merger.coordinator.sync_filtered_calendar_merger",
+            sync_mock,
+        ),
+        patch.object(
+            hass.config_entries, "async_forward_entry_setups", AsyncMock()
+        ),
+    ):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+        calls_before = sync_mock.call_count
+        async_fire_time_changed(hass, dt_util.utcnow() + timedelta(minutes=1))
+        await hass.async_block_till_done()
+
+    assert sync_mock.call_count == calls_before + 1
 
 
 @pytest.mark.asyncio
