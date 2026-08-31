@@ -28,6 +28,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Filtered Calendar Merger from a config entry."""
     coordinator = FilteredCalendarMergerCoordinator(hass, entry)
     if coordinator.update_interval is not None:
+        # DataUpdateCoordinator only schedules periodic refreshes while it has
+        # listeners. The sync itself is integration work, so it must not stop
+        # when the optional sensor/button entities are disabled or unavailable.
+        entry.async_on_unload(coordinator.async_add_listener(lambda: None))
         await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
