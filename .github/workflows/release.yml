@@ -1,0 +1,42 @@
+# .github/workflows/release.yml
+name: Release manifest version
+
+on:
+  push:
+    branches: [refactoring] # change if your default branch has a different name
+    paths:
+      - custom_components/filtered_calendar_merger/manifest.json
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - id: version
+        name: Read manifest version
+        shell: bash
+        run: |
+          version="$(jq -r '.version // empty' custom_components/filtered_calendar_merger/manifest.json)"
+          test -n "$version"
+          echo "value=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.value }}
+        shell: bash
+        run: |
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            echo "Release $VERSION already exists; nothing to do."
+            exit 0
+          fi
+
+          gh release create "$VERSION" \
+            --target "$GITHUB_SHA" \
+            --title "$VERSION" \
+            --generate-notes
+            --draft
